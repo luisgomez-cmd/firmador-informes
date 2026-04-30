@@ -1,4 +1,4 @@
-// Librerías
+// Carga dinámica de librerías para asegurar compatibilidad
 const scriptPdfLib = document.createElement('script');
 scriptPdfLib.src = 'https://unpkg.com/pdf-lib/dist/pdf-lib.min.js';
 document.head.appendChild(scriptPdfLib);
@@ -10,9 +10,13 @@ document.head.appendChild(scriptPdfJS);
 let pdfDocBytes = null;
 let pdfJsDoc = null;
 let nombreOriginalArchivo = "";
-let paginaActual = 1;
+let totalPaginas = 0;
 
-// 1. Manejo del PDF y Navegación
+// Configuración de PDF.js
+const pdfjsLib = window['pdfjs-dist/build/pdf'];
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+
+// 1. Manejo del PDF
 document.getElementById('pdfInput').addEventListener('change', async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -21,44 +25,62 @@ document.getElementById('pdfInput').addEventListener('change', async (e) => {
     const arrayBuffer = await file.arrayBuffer();
     pdfDocBytes = arrayBuffer;
 
-    pdfJsDoc = await pdfjsLib.getDocument({data: arrayBuffer}).promise;
-    paginaActual = pdfJsDoc.numPages; // IR DIRECTO A LA ÚLTIMA PÁGINA
+    // Cargar y procesar PDF
+    const loadingTask = pdfjsLib.getDocument({data: arrayBuffer});
+    pdfJsDoc = await loadingTask.promise;
+    totalPaginas = pdfJsDoc.numPages;
     
-    renderizarPagina(paginaActual);
+    // Ir directamente a la última página
+    await renderizarPagina(totalPaginas);
     
+    document.getElementById('num-pag').textContent = totalPaginas;
+    document.getElementById('page-label').style.display = 'block';
     document.getElementById('placeholder-text').style.display = 'none';
     document.getElementById('canvas-container').style.display = 'block';
-    // Mostramos controles de página si quieres (opcional, por ahora directo a la última)
 });
 
 async function renderizarPagina(num) {
     const page = await pdfJsDoc.getPage(num);
     const canvas = document.getElementById('pdf-render');
     const context = canvas.getContext('2d');
-    const viewport = page.getViewport({scale: 1.5});
     
+    // Escala optimizada para visualización
+    const viewport = page.getViewport({scale: 1.5});
     canvas.height = viewport.height;
     canvas.width = viewport.width;
-    await page.render({canvasContext: context, viewport: viewport}).promise;
+
+    const renderContext = {
+        canvasContext: context,
+        viewport: viewport
+    };
+    await page.render(renderContext).promise;
 }
 
 // 2. Manejo de la Firma
 document.getElementById('firmaInput').addEventListener('change', (e) => {
     const file = e.target.files[0];
+    if (!file) return;
+
     const reader = new FileReader();
     reader.onload = (event) => {
         const img = document.getElementById('firma-flotante');
         img.src = event.target.result;
         img.style.display = 'block';
-        img.style.transform = 'translate3d(0,0,0)';
+        img.style.transform = 'translate3d(0,0,0)'; // Reset
+        
+        // Reset de posición de arrastre
+        xOffset = 0; yOffset = 0;
+        
         document.getElementById('btnFirmar').style.display = 'block';
     };
     reader.readAsDataURL(file);
 });
 
-// 3. Arrastrar Firma
+// 3. Lógica de Arrastrar (Drag & Drop)
 const firma = document.getElementById('firma-flotante');
-let active = false, currentX = 0, currentY = 0, initialX, initialY, xOffset = 0, yOffset = 0;
+let active = false;
+let currentX, currentY, initialX, initialY;
+let xOffset = 0, yOffset = 0;
 
 document.addEventListener("mousedown", dragStart);
 document.addEventListener("mouseup", dragEnd);
@@ -71,29 +93,46 @@ function dragStart(e) {
         active = true;
     }
 }
-function dragEnd() { active = false; }
+
+function dragEnd() {
+    active = false;
+}
+
 function drag(e) {
     if (active) {
         e.preventDefault();
         currentX = e.clientX - initialX;
         currentY = e.clientY - initialY;
-        xOffset = currentX; yOffset = currentY;
+        xOffset = currentX;
+        yOffset = currentY;
         firma.style.transform = `translate3d(${currentX}px, ${currentY}px, 0)`;
     }
 }
 
-// Confirmación
+// Confirmación con doble clic
 firma.addEventListener('dblclick', () => {
     firma.style.border = "2px solid #28a745";
-    alert("✅ Firma fijada en página " + paginaActual);
+    firma.style.background = "rgba(40, 167, 69, 0.2)";
+    alert("📍 Ubicación fijada en la última página.");
 });
 
-// 4. Lógica de nombre (botón Firmar)
+// 4. Procesamiento de Nombre y Botón
 document.getElementById('btnFirmar').addEventListener('click', () => {
-    const nombre = document.getElementById('nombreProfesor').value;
-    if(!nombre) return alert("Escribe tu nombre");
+    const nombreUser = document.getElementById('nombreProfesor').value;
+    if(!nombreUser) {
+        alert("⚠️ Por favor, escribe tu nombre antes de continuar.");
+        return;
+    }
     
-    const nombreLimpio = nombre.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().trim().replace(/\s+/g, '_');
-    const codigo = nombreOriginalArchivo.split('_')[0];
-    alert(`Se generará: ${nombreLimpio}_${codigo}.pdf`);
+    // Limpieza de nombre: Mayúsculas, sin tildes, con guiones bajos
+    const nombreLimpio = nombreUser.normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toUpperCase()
+        .trim()
+        .replace(/\s+/g, '_');
+        
+    const codigoTaller = nombreOriginalArchivo.split('_')[0];
+    const nombreFinal = `${nombreLimpio}_${codigoTaller}.pdf`;
+    
+    alert(`¡Perfecto! Se generará el archivo:\n${nombreFinal}\n\n(Próximo paso: activar el envío automático)`);
 });
