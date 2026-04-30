@@ -3,59 +3,67 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Firmador IND - Profesional</title>
+    <title>Firmador IND</title>
     <style>
         * { box-sizing: border-box; }
         body { 
             font-family: 'Segoe UI', sans-serif; 
             margin: 0; 
             display: flex; 
+            justify-content: center; /* Centra todo el contenido */
             height: 100vh; 
-            background: #2f3337; 
-            overflow: hidden;
+            background: #525659; /* Fondo gris oscuro tipo lector PDF */
         }
         
-        /* Panel Izquierdo: Configuración */
+        /* Contenedor Principal Limitado */
+        .app-container {
+            display: flex;
+            width: 100%;
+            max-width: 1400px; /* Evita que se estire demasiado */
+            background: #f8f9fa;
+            box-shadow: 0 0 50px rgba(0,0,0,0.5);
+        }
+
+        /* Lateral Izquierdo: Configuración */
         .sidebar { 
-            width: 320px; 
+            width: 300px; 
             background: #ffffff; 
             padding: 20px; 
             display: flex; 
             flex-direction: column; 
             gap: 15px; 
-            box-shadow: 2px 0 10px rgba(0,0,0,0.3);
-            z-index: 20;
+            border-right: 1px solid #ddd;
         }
         
-        /* Panel Central: Navegador de Páginas */
+        /* Navegador de Miniaturas */
         .page-nav {
-            width: 120px;
-            background: #404448;
+            width: 150px;
+            background: #e9ecef;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 10px 0;
-            gap: 10px;
-            border-right: 1px solid #555;
+            padding: 15px 0;
+            gap: 15px;
         }
 
         .page-thumb {
-            width: 80px;
-            height: 110px;
+            width: 100px;
+            height: 130px;
             background: white;
             cursor: pointer;
-            border: 2px solid transparent;
+            border: 1px solid #ccc;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            font-size: 0.8rem;
-            font-weight: bold;
-            color: #333;
+            font-size: 0.7rem;
             transition: 0.2s;
         }
+        .page-thumb canvas { width: 90%; height: auto; margin-top: 5px; }
         .page-thumb:hover { border-color: #007bff; }
-        .page-thumb.active { border-color: #28a745; background: #e7f3ff; }
+        .page-thumb.active { border: 2px solid #28a745; background: #fff; }
 
         /* Área Principal del Visor */
         .viewer-area { 
@@ -64,73 +72,76 @@
             padding: 40px; 
             display: flex; 
             justify-content: center;
-            align-items: flex-start;
+            background: #525659;
         }
         
         #canvas-container { 
             position: relative; 
             background: white; 
-            box-shadow: 0 0 20px rgba(0,0,0,0.5); 
+            box-shadow: 0 0 20px rgba(0,0,0,0.3); 
             display: none;
         }
         
-        #pdf-render { display: block; max-width: 100%; }
+        #pdf-render { display: block; }
         
         #firma-flotante { 
             position: absolute; 
             cursor: move; 
             width: 180px; 
             display: none; 
-            opacity: 0.6; /* Semitransparente al inicio */
-            transition: opacity 0.3s, border 0.3s;
+            mix-blend-mode: multiply; /* Truco para quitar el fondo blanco de las fotos */
             z-index: 1000;
+            border: 1px dashed transparent;
         }
-        #firma-flotante.fixed {
-            opacity: 1; /* Sólida al fijar */
-            border: none !important;
+        
+        #firma-flotante.moving {
+            border: 1px dashed #007bff;
+            opacity: 0.7;
         }
 
-        /* Estilos de inputs y botones */
-        h2 { font-size: 1.2rem; color: #d32f2f; margin: 0; }
+        h2 { font-size: 1.1rem; color: #d32f2f; margin: 0; }
         label { font-size: 0.8rem; font-weight: bold; color: #555; }
-        input { padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+        input { padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.8rem; }
+        
         .btn-enviar { 
             background: #28a745; color: white; border: none; padding: 15px; 
             border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: auto;
         }
-        .btn-enviar:hover { background: #218838; }
-        #placeholder { color: #ccc; text-align: center; margin-top: 200px; width: 100%; }
+        
+        .instrucciones { font-size: 0.75rem; color: #666; background: #fff3cd; padding: 10px; border-radius: 5px; }
     </style>
 </head>
 <body>
 
-<div class="sidebar">
-    <h2>Firmar Informe</h2>
-    <hr>
-    <label>Nombre del Profesor:</label>
-    <input type="text" id="nombreProfesor" placeholder="EJ: ALEXANDRA ARAYA">
-    
-    <label>1. Informe PDF:</label>
-    <input type="file" id="pdfInput" accept="application/pdf">
-    
-    <label>2. Foto de Firma:</label>
-    <input type="file" id="firmaInput" accept="image/*">
-    
-    <p style="font-size: 0.75rem; color: #666;">
-        Tip: Usa el panel gris para cambiar de página. Doble clic en la firma para "estamparla".
-    </p>
-    
-    <button id="btnFirmar" class="btn-enviar" style="display:none;">GENERAR Y ENVIAR</button>
-</div>
-
-<div class="page-nav" id="page-nav" style="display:none;">
+<div class="app-container">
+    <div class="sidebar">
+        <h2>Firmar Informe</h2>
+        <div class="instrucciones">
+            1. Sube PDF y Firma.<br>
+            2. Arrastra la firma.<br>
+            3. <b>Doble clic</b> para fijar.
+        </div>
+        
+        <label>Nombre del Profesor:</label>
+        <input type="text" id="nombreProfesor" placeholder="EJ: ALEXANDRA ARAYA">
+        
+        <label>1. Informe PDF:</label>
+        <input type="file" id="pdfInput" accept="application/pdf">
+        
+        <label>2. Foto de Firma:</label>
+        <input type="file" id="firmaInput" accept="image/*">
+        
+        <button id="btnFirmar" class="btn-enviar" style="display:none;">GENERAR INFORME FINAL</button>
     </div>
 
-<div class="viewer-area">
-    <div id="placeholder"><h3>Cargue un documento para visualizar</h3></div>
-    <div id="canvas-container">
-        <canvas id="pdf-render"></canvas>
-        <img id="firma-flotante" src="" alt="Firma">
+    <div class="page-nav" id="page-nav" style="display:none;">
+        </div>
+
+    <div class="viewer-area">
+        <div id="canvas-container">
+            <canvas id="pdf-render"></canvas>
+            <img id="firma-flotante" src="" alt="Firma">
+        </div>
     </div>
 </div>
 
