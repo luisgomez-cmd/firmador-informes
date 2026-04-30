@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firmador de Informes</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; background: #f4f4f9; text-align: center; }
+        .container { max-width: 600px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        input, button { width: 100%; margin: 10px 0; padding: 12px; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; }
+        button { background: #007bff; color: white; border: none; cursor: pointer; font-weight: bold; }
+        button:hover { background: #0056b3; }
+        #canvas-container { position: relative; border: 2px dashed #ccc; margin-top: 20px; display: none; overflow: hidden; }
+        #pdf-render { width: 100%; }
+        #firma-flotante { position: absolute; cursor: move; width: 150px; display: none; border: 1px dashed blue; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Firmador de Informes</h2>
+    <p>Sigue los pasos para enviar tu informe firmado.</p>
+    
+    <input type="text" id="nombreProfesor" placeholder="Tu Nombre y Apellido (Ej: Alexandra Araya)">
+    
+    <label>1. Sube el Informe PDF:</label>
+    <input type="file" id="pdfInput" accept="application/pdf">
+    
+    <label>2. Sube la foto de tu Firma:</label>
+    <input type="file" id="firmaInput" accept="image/*">
+    
+    <div id="canvas-container">
+        <p><small>Arrastra la firma a su lugar. Doble clic para fijar.</small></p>
+        <canvas id="pdf-render"></canvas>
+        <img id="firma-flotante" src="" alt="Firma">
+    </div>
+
+    <button id="btnFirmar" style="display:none;">GENERAR Y ENVIAR INFORME</button>
+</div>
+
+</body>
+</html>
