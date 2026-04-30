@@ -2,137 +2,63 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Firmador IND</title>
+    <title>Firmador IND Oficial</title>
     <style>
-        * { box-sizing: border-box; }
-        body { 
-            font-family: 'Segoe UI', Arial, sans-serif; 
-            margin: 0; 
-            display: flex; 
-            justify-content: center; 
-            height: 100vh; 
-            background: #525659; 
-        }
-        
-        .app-container {
-            display: flex;
-            width: 100%;
-            max-width: 1200px;
-            background: #f4f4f4;
-            box-shadow: 0 0 30px rgba(0,0,0,0.5);
-        }
-
-        .sidebar { 
-            width: 280px; 
-            background: #ffffff; 
-            padding: 20px; 
-            display: flex; 
-            flex-direction: column; 
-            gap: 15px; 
-            border-right: 1px solid #ddd;
-        }
-
-        .viewer-area { 
-            flex-grow: 1; 
-            overflow: auto; 
-            padding: 20px; 
-            display: flex; 
-            flex-direction: column;
-            align-items: center;
-            background: #8e9194;
-        }
+        body { font-family: Arial; margin: 0; display: flex; height: 100vh; background: #333; }
+        .sidebar { width: 300px; background: white; padding: 20px; z-index: 10; box-shadow: 2px 0 10px rgba(0,0,0,0.5); }
+        .main { flex-grow: 1; overflow: auto; display: flex; flex-direction: column; align-items: center; padding: 20px; }
         
         #canvas-container { 
             position: relative; 
+            border: 1px solid white; 
             background: white; 
-            box-shadow: 0 0 15px rgba(0,0,0,0.2); 
             display: none;
-            margin-top: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.8);
         }
         
-        #pdf-render { display: block; border: 1px solid #ccc; }
+        #pdf-render { display: block; }
         
-        /* Estilo de la Firma: Sin cuadro, mezcla con el fondo */
+        /* Estilo idéntico a sistemas profesionales */
         #firma-flotante { 
             position: absolute; 
             cursor: move; 
             width: 150px; 
             display: none; 
-            mix-blend-mode: multiply; /* Esto quita el fondo blanco de la foto */
-            z-index: 100;
-            top: 0;
-            left: 0;
+            mix-blend-mode: multiply; /* Elimina fondo blanco de la firma */
+            z-index: 999;
+            top: 50px;
+            left: 50px;
+            user-select: none;
         }
 
-        .controles-paginas {
-            margin-bottom: 10px;
-            display: none;
-            gap: 10px;
-            align-items: center;
-            background: white;
-            padding: 5px 15px;
-            border-radius: 20px;
-        }
-
-        h2 { font-size: 1.1rem; color: #b71c1c; margin: 0; }
-        label { font-size: 0.8rem; font-weight: bold; color: #333; }
-        input { padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.8rem; width: 100%; }
-        
-        button { 
-            padding: 10px; 
-            border-radius: 5px; 
-            border: 1px solid #ccc; 
-            cursor: pointer;
-            font-size: 0.8rem;
-        }
-
-        .btn-enviar { 
-            background: #2e7d32; color: white; border: none; padding: 15px; 
-            font-weight: bold; margin-top: auto;
-        }
+        .controls { background: #eee; padding: 10px; margin-bottom: 10px; border-radius: 5px; display: none; }
+        input, button { width: 100%; margin: 5px 0; padding: 10px; }
+        .btn-ok { background: #2e7d32; color: white; border: none; font-weight: bold; cursor: pointer; }
+        h2 { font-size: 1.2rem; color: #c62828; }
     </style>
 </head>
 <body>
 
-<div class="app-container">
-    <div class="sidebar">
-        <h2>Firmar Informe</h2>
-        <hr>
-        <label>Nombre del Profesor:</label>
-        <input type="text" id="nombreProfesor" placeholder="EJ: ALEXANDRA ARAYA">
-        
-        <label>1. Subir Informe (PDF):</label>
-        <input type="file" id="pdfInput" accept="application/pdf">
-        
-        <label>2. Subir Firma (Imagen):</label>
-        <input type="file" id="firmaInput" accept="image/*">
-        
-        <div style="font-size: 0.7rem; color: #666; margin-top: 10px;">
-            <b>Instrucciones:</b><br>
-            - Usa las flechas para ir a la última página.<br>
-            - Arrastra la firma a su lugar.<br>
-            - Haz doble clic para fijar.
-        </div>
-        
-        <button id="btnFirmar" class="btn-enviar" style="display:none;">GENERAR DOCUMENTO</button>
+<div class="sidebar">
+    <h2>Firmar Informe</h2>
+    <input type="text" id="nombreProfesor" placeholder="Tu Nombre y Apellido">
+    <label>1. Cargar PDF:</label>
+    <input type="file" id="pdfInput" accept=".pdf">
+    <label>2. Cargar Firma:</label>
+    <input type="file" id="firmaInput" accept="image/*">
+    <button id="btnGenerar" class="btn-ok" style="display:none;">DESCARGAR FIRMADO</button>
+</div>
+
+<div class="main">
+    <div id="controls" class="controls">
+        <button onclick="cambiarPagina(-1)" style="width: 80px;">◀</button>
+        <span id="page-info">Página: 0 / 0</span>
+        <button onclick="cambiarPagina(1)" style="width: 80px;">▶</button>
     </div>
 
-    <div class="viewer-area">
-        <div id="controles" class="controles-paginas">
-            <button id="prev-page">◀ Anterior</button>
-            <span id="page-num-display">Página: 1 / 1</span>
-            <button id="next-page">Siguiente ▶</button>
-        </div>
-
-        <div id="canvas-container">
-            <canvas id="pdf-render"></canvas>
-            <img id="firma-flotante" src="" alt="Firma">
-        </div>
-        
-        <div id="mensaje-inicial" style="color: white; margin-top: 100px;">
-            <h3>Cargue un informe para comenzar</h3>
-        </div>
+    <div id="canvas-container">
+        <canvas id="pdf-render"></canvas>
+        <img id="firma-flotante" src="" alt="firma">
     </div>
 </div>
 
