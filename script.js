@@ -65,9 +65,10 @@ document.getElementById('firmaInput').addEventListener('change', (e) => {
     reader.readAsDataURL(file);
 });
 
-// 3. Movimiento (Drag) - Bloqueando comportamientos de sistema
+// 3. Movimiento (Drag) - Bloqueo de selección nativa
 wrapper.addEventListener("mousedown", (e) => {
     if (e.target === resizer) return;
+    e.preventDefault(); // Bloquea selección azul
     initialX = e.clientX - xOffset;
     initialY = e.clientY - yOffset;
     active = true;
@@ -86,7 +87,7 @@ document.addEventListener("mouseup", () => {
 
 document.addEventListener("mousemove", (e) => {
     if (active) {
-        e.preventDefault(); // Evita el icono de "error" del navegador
+        e.preventDefault();
         currentX = e.clientX - initialX;
         currentY = e.clientY - initialY;
         xOffset = currentX;
@@ -101,15 +102,14 @@ document.addEventListener("mousemove", (e) => {
     }
 });
 
-// 4. Doble clic para Confirmar/Editar sin alertas
+// 4. Doble clic para Confirmar
 wrapper.addEventListener('dblclick', (e) => {
     e.preventDefault();
+    wrapper.classList.toggle('confirmada');
     if (wrapper.classList.contains('confirmada')) {
-        wrapper.classList.remove('confirmada');
-        wrapper.style.opacity = "0.4";
-    } else {
-        wrapper.classList.add('confirmada');
         wrapper.style.opacity = "1";
+    } else {
+        wrapper.style.opacity = "0.4";
     }
 });
 
