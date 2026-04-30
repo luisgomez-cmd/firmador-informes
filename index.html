@@ -4,7 +4,13 @@
     <meta charset="UTF-8">
     <title>Firmador IND Oficial</title>
     <style>
-        * { user-select: none; } /* Evita selección de texto molesta */
+        /* Bloqueo total de selección azul y resaltados */
+        * { 
+            user-select: none; 
+            -webkit-user-drag: none; 
+            -webkit-tap-highlight-color: transparent;
+        } 
+        
         body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; display: flex; height: 100vh; background: #333; overflow: hidden; }
         
         .sidebar { width: 300px; background: white; padding: 20px; z-index: 10; box-shadow: 2px 0 10px rgba(0,0,0,0.5); display: flex; flex-direction: column; }
@@ -16,12 +22,10 @@
             display: none;
             box-shadow: 0 0 30px rgba(0,0,0,0.5);
             margin-top: 10px;
-            cursor: default;
         }
         
-        #pdf-render { display: block; }
+        #pdf-render { display: block; pointer-events: none; }
         
-        /* Contenedor de la firma */
         #firma-wrapper {
             position: absolute;
             top: 50px;
@@ -29,27 +33,28 @@
             width: 150px;
             display: none;
             z-index: 999;
-            cursor: grab; /* Mano abierta para mover */
+            cursor: grab;
             border: 1px dashed #007bff;
-            opacity: 0.4; /* Semitransparente inicial */
+            opacity: 0.4;
             transition: opacity 0.2s;
+            /* Evita que se ponga azul al mover */
+            background: transparent;
+            outline: none;
         }
 
-        #firma-wrapper:active { cursor: grabbing; } /* Mano cerrada al mover */
+        #firma-wrapper:active { cursor: grabbing; }
 
         #firma-flotante {
             width: 100%;
             height: 100%;
             display: block;
             mix-blend-mode: multiply;
-            pointer-events: none; /* Evita el símbolo de "error/prohibido" */
+            pointer-events: none;
         }
 
-        /* Estado confirmado */
         #firma-wrapper.confirmada {
             opacity: 1;
             border: 1px solid transparent;
-            cursor: pointer;
         }
 
         .resizer {
@@ -61,13 +66,33 @@
             bottom: -6px;
             cursor: nwse-resize;
             border-radius: 50%;
-            display: block; /* Siempre visible para ajustar */
         }
 
-        .controls { background: white; padding: 8px 20px; margin-bottom: 10px; border-radius: 30px; display: none; gap: 15px; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        input, button { width: 100%; margin: 5px 0; padding: 10px; border-radius: 5px; border: 1px solid #ccc; outline: none; }
-        .btn-ok { background: #2e7d32; color: white; border: none; font-weight: bold; cursor: pointer; margin-top: auto; }
-        .btn-ok:hover { background: #1b5e20; }
+        .controls { 
+            background: white; 
+            padding: 8px 20px; 
+            margin-bottom: 10px; 
+            border-radius: 30px; 
+            display: none; 
+            gap: 15px; 
+            align-items: center; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
+        }
+
+        /* Botones de navegación sin resaltado azul */
+        .nav-btn {
+            width: 50px;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            background: #f9f9f9;
+            cursor: pointer;
+            outline: none;
+        }
+        .nav-btn:active { background: #ddd; }
+
+        input { width: 100%; margin: 5px 0; padding: 10px; border-radius: 5px; border: 1px solid #ccc; outline: none; }
+        .btn-ok { width: 100%; background: #2e7d32; color: white; border: none; padding: 15px; font-weight: bold; cursor: pointer; margin-top: auto; border-radius: 5px; }
         h2 { font-size: 1.2rem; color: #c62828; margin-top: 0; }
         .hint { font-size: 0.75rem; color: #666; margin-top: 10px; background: #f9f9f9; padding: 10px; border-radius: 5px; }
     </style>
@@ -85,10 +110,10 @@
     <input type="file" id="firmaInput" accept="image/*">
     
     <div class="hint">
-        <b>Ayuda:</b><br>
+        <b>Instrucciones:</b><br>
         1. Arrastra la firma.<br>
-        2. <b>Doble clic</b> para confirmarla.<br>
-        3. Usa el círculo azul para el tamaño.
+        2. <b>Doble clic</b> para fijarla.<br>
+        3. Usa el punto azul para el tamaño.
     </div>
 
     <button id="btnGenerar" class="btn-ok" style="display:none;">GENERAR DOCUMENTO</button>
@@ -96,15 +121,15 @@
 
 <div class="main">
     <div id="controls" class="controls">
-        <button onclick="cambiarPagina(-1)" style="width: 50px;">◀</button>
+        <button class="nav-btn" onclick="cambiarPagina(-1)">◀</button>
         <span id="page-info" style="font-weight: bold; font-size: 0.9rem;">Página: 0 / 0</span>
-        <button onclick="cambiarPagina(1)" style="width: 50px;">▶</button>
+        <button class="nav-btn" onclick="cambiarPagina(1)">▶</button>
     </div>
 
     <div id="canvas-container">
         <canvas id="pdf-render"></canvas>
         <div id="firma-wrapper">
-            <img id="firma-flotante" src="" alt="firma" draggable="false">
+            <img id="firma-flotante" src="" alt="firma">
             <div class="resizer"></div>
         </div>
     </div>
