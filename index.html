@@ -3,40 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Firmador de Informes</title>
+    <title>Firmador Pro</title>
     <style>
-        body { font-family: sans-serif; padding: 20px; background: #f4f4f9; text-align: center; }
-        .container { max-width: 600px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        input, button { width: 100%; margin: 10px 0; padding: 12px; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; }
-        button { background: #007bff; color: white; border: none; cursor: pointer; font-weight: bold; }
-        button:hover { background: #0056b3; }
-        #canvas-container { position: relative; border: 2px dashed #ccc; margin-top: 20px; display: none; overflow: hidden; }
-        #pdf-render { width: 100%; }
-        #firma-flotante { position: absolute; cursor: move; width: 150px; display: none; border: 1px dashed blue; }
+        * { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; display: flex; height: 100vh; background: #eef2f3; }
+        
+        /* Panel Lateral */
+        .sidebar { width: 350px; background: white; padding: 25px; box-shadow: 2px 0 10px rgba(0,0,0,0.1); z-index: 10; display: flex; flex-direction: column; gap: 15px; }
+        h2 { color: #333; margin-top: 0; font-size: 1.2rem; }
+        label { font-weight: bold; font-size: 0.9rem; color: #666; }
+        input, button { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ddd; }
+        
+        .btn-enviar { background: #28a745; color: white; border: none; font-weight: bold; cursor: pointer; margin-top: auto; padding: 20px; font-size: 1.1rem; }
+        .btn-enviar:hover { background: #218838; }
+
+        /* Área del Visor */
+        .viewer-area { flex-grow: 1; overflow: auto; padding: 40px; display: flex; justify-content: center; align-items: flex-start; }
+        #canvas-container { position: relative; background: white; box-shadow: 0 10px 30px rgba(0,0,0,0.2); display: none; }
+        #pdf-render { max-width: 100%; height: auto; }
+        #firma-flotante { position: absolute; cursor: move; width: 180px; display: none; border: 2px dashed #007bff; background: rgba(255,255,255,0.5); }
+        
+        .instrucciones { color: #777; font-size: 0.8rem; border-left: 3px solid #007bff; padding-left: 10px; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h2>Firmador de Informes</h2>
-    <p>Sigue los pasos para enviar tu informe firmado.</p>
+<div class="sidebar">
+    <h2>Firmar Informe</h2>
+    <div class="instrucciones">Llena los datos y arrastra tu firma al documento a la derecha.</div>
     
-    <input type="text" id="nombreProfesor" placeholder="Tu Nombre y Apellido (Ej: Alexandra Araya)">
+    <label>Nombre del Profesor:</label>
+    <input type="text" id="nombreProfesor" placeholder="Ej: Alexandra Araya">
     
-    <label>1. Sube el Informe PDF:</label>
+    <label>1. Seleccionar Informe (PDF):</label>
     <input type="file" id="pdfInput" accept="application/pdf">
     
-    <label>2. Sube la foto de tu Firma:</label>
+    <label>2. Subir Foto de Firma:</label>
     <input type="file" id="firmaInput" accept="image/*">
     
+    <button id="btnFirmar" class="btn-enviar" style="display:none;">FIRMAR Y ENVIAR</button>
+</div>
+
+<div class="viewer-area">
     <div id="canvas-container">
-        <p><small>Arrastra la firma a su lugar. Doble clic para fijar.</small></p>
         <canvas id="pdf-render"></canvas>
         <img id="firma-flotante" src="" alt="Firma">
     </div>
-
-    <button id="btnFirmar" style="display:none;">GENERAR Y ENVIAR INFORME</button>
+    <div id="placeholder-text">Sube un archivo para comenzar...</div>
 </div>
+
 <script src="script.js"></script>
 </body>
 </html>
