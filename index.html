@@ -1,129 +1,139 @@
-// Librerías
-const scriptPdfLib = document.createElement('script');
-scriptPdfLib.src = 'https://unpkg.com/pdf-lib/dist/pdf-lib.min.js';
-document.head.appendChild(scriptPdfLib);
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firmador IND - Profesional</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', sans-serif; 
+            margin: 0; 
+            display: flex; 
+            height: 100vh; 
+            background: #2f3337; 
+            overflow: hidden;
+        }
+        
+        /* Panel Izquierdo: Configuración */
+        .sidebar { 
+            width: 320px; 
+            background: #ffffff; 
+            padding: 20px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 15px; 
+            box-shadow: 2px 0 10px rgba(0,0,0,0.3);
+            z-index: 20;
+        }
+        
+        /* Panel Central: Navegador de Páginas */
+        .page-nav {
+            width: 120px;
+            background: #404448;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px 0;
+            gap: 10px;
+            border-right: 1px solid #555;
+        }
 
-const scriptPdfJS = document.createElement('script');
-scriptPdfJS.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js';
-document.head.appendChild(scriptPdfJS);
+        .page-thumb {
+            width: 80px;
+            height: 110px;
+            background: white;
+            cursor: pointer;
+            border: 2px solid transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: bold;
+            color: #333;
+            transition: 0.2s;
+        }
+        .page-thumb:hover { border-color: #007bff; }
+        .page-thumb.active { border-color: #28a745; background: #e7f3ff; }
 
-const pdfjsLib = window['pdfjs-dist/build/pdf'];
-pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+        /* Área Principal del Visor */
+        .viewer-area { 
+            flex-grow: 1; 
+            overflow: auto; 
+            padding: 40px; 
+            display: flex; 
+            justify-content: center;
+            align-items: flex-start;
+        }
+        
+        #canvas-container { 
+            position: relative; 
+            background: white; 
+            box-shadow: 0 0 20px rgba(0,0,0,0.5); 
+            display: none;
+        }
+        
+        #pdf-render { display: block; max-width: 100%; }
+        
+        #firma-flotante { 
+            position: absolute; 
+            cursor: move; 
+            width: 180px; 
+            display: none; 
+            opacity: 0.6; /* Semitransparente al inicio */
+            transition: opacity 0.3s, border 0.3s;
+            z-index: 1000;
+        }
+        #firma-flotante.fixed {
+            opacity: 1; /* Sólida al fijar */
+            border: none !important;
+        }
 
-let pdfDocBytes = null;
-let pdfJsDoc = null;
-let nombreOriginalArchivo = "";
-let paginaActual = 1;
+        /* Estilos de inputs y botones */
+        h2 { font-size: 1.2rem; color: #d32f2f; margin: 0; }
+        label { font-size: 0.8rem; font-weight: bold; color: #555; }
+        input { padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+        .btn-enviar { 
+            background: #28a745; color: white; border: none; padding: 15px; 
+            border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: auto;
+        }
+        .btn-enviar:hover { background: #218838; }
+        #placeholder { color: #ccc; text-align: center; margin-top: 200px; width: 100%; }
+    </style>
+</head>
+<body>
 
-// 1. Cargar PDF y generar navegación
-document.getElementById('pdfInput').addEventListener('change', async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+<div class="sidebar">
+    <h2>Firmar Informe</h2>
+    <hr>
+    <label>Nombre del Profesor:</label>
+    <input type="text" id="nombreProfesor" placeholder="EJ: ALEXANDRA ARAYA">
     
-    nombreOriginalArchivo = file.name;
-    const arrayBuffer = await file.arrayBuffer();
-    pdfDocBytes = arrayBuffer;
-
-    pdfJsDoc = await pdfjsLib.getDocument({data: arrayBuffer}).promise;
+    <label>1. Informe PDF:</label>
+    <input type="file" id="pdfInput" accept="application/pdf">
     
-    // Crear Navegador de páginas
-    const nav = document.getElementById('page-nav');
-    nav.innerHTML = '';
-    nav.style.display = 'flex';
+    <label>2. Foto de Firma:</label>
+    <input type="file" id="firmaInput" accept="image/*">
     
-    for (let i = 1; i <= pdfJsDoc.numPages; i++) {
-        const thumb = document.createElement('div');
-        thumb.className = 'page-thumb';
-        thumb.innerText = 'Pág ' + i;
-        thumb.onclick = () => cambiarPagina(i);
-        thumb.id = 'thumb-' + i;
-        nav.appendChild(thumb);
-    }
-
-    document.getElementById('placeholder').style.display = 'none';
-    document.getElementById('canvas-container').style.display = 'block';
+    <p style="font-size: 0.75rem; color: #666;">
+        Tip: Usa el panel gris para cambiar de página. Doble clic en la firma para "estamparla".
+    </p>
     
-    // Por defecto ir a la última página
-    cambiarPagina(pdfJsDoc.numPages);
-});
+    <button id="btnFirmar" class="btn-enviar" style="display:none;">GENERAR Y ENVIAR</button>
+</div>
 
-async function cambiarPagina(num) {
-    paginaActual = num;
-    
-    // Actualizar UI del navegador
-    document.querySelectorAll('.page-thumb').forEach(t => t.classList.remove('active'));
-    document.getElementById('thumb-' + num).classList.add('active');
+<div class="page-nav" id="page-nav" style="display:none;">
+    </div>
 
-    const page = await pdfJsDoc.getPage(num);
-    const canvas = document.getElementById('pdf-render');
-    const context = canvas.getContext('2d');
-    
-    // Escala 1.2 para un ligero zoom-out respecto al anterior
-    const viewport = page.getViewport({scale: 1.2});
-    canvas.height = viewport.height;
-    canvas.width = viewport.width;
+<div class="viewer-area">
+    <div id="placeholder"><h3>Cargue un documento para visualizar</h3></div>
+    <div id="canvas-container">
+        <canvas id="pdf-render"></canvas>
+        <img id="firma-flotante" src="" alt="Firma">
+    </div>
+</div>
 
-    await page.render({canvasContext: context, viewport: viewport}).promise;
-    
-    // Resetear visual de la firma si ya estaba
-    const firma = document.getElementById('firma-flotante');
-    firma.classList.remove('fixed');
-    firma.style.border = "2px dashed #007bff";
-}
-
-// 2. Manejo de la Firma
-document.getElementById('firmaInput').addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    const reader = new FileReader();
-    reader.onload = (event) => {
-        const img = document.getElementById('firma-flotante');
-        img.src = event.target.result;
-        img.style.display = 'block';
-        img.style.top = '50px';
-        img.style.left = '50px';
-        img.classList.remove('fixed');
-        document.getElementById('btnFirmar').style.display = 'block';
-    };
-    reader.readAsDataURL(file);
-});
-
-// 3. Arrastrar Firma (Mejorado para mantenerse dentro del PDF)
-const firma = document.getElementById('firma-flotante');
-let active = false, currentX = 0, currentY = 0, initialX, initialY, xOffset = 0, yOffset = 0;
-
-firma.addEventListener("mousedown", dragStart);
-document.addEventListener("mouseup", dragEnd);
-document.addEventListener("mousemove", drag);
-
-function dragStart(e) {
-    initialX = e.clientX - xOffset;
-    initialY = e.clientY - yOffset;
-    if (e.target === firma) active = true;
-}
-function dragEnd() { active = false; }
-function drag(e) {
-    if (active) {
-        e.preventDefault();
-        currentX = e.clientX - initialX;
-        currentY = e.clientY - initialY;
-        xOffset = currentX;
-        yOffset = currentY;
-        firma.style.transform = `translate3d(${currentX}px, ${currentY}px, 0)`;
-    }
-}
-
-// Doble clic para "Estampar"
-firma.addEventListener('dblclick', () => {
-    firma.classList.add('fixed');
-    alert("Firma estampada en página " + paginaActual + ". Ya puedes generar el informe.");
-});
-
-// 4. Lógica de Nombre Final
-document.getElementById('btnFirmar').addEventListener('click', () => {
-    const nombre = document.getElementById('nombreProfesor').value;
-    if(!nombre) return alert("Por favor, ingresa tu nombre");
-    
-    const nombreLimpio = nombre.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().trim().replace(/\s+/g, '_');
-    const codigo = nombreOriginalArchivo.split('_')[0];
-    alert(`Listo para enviar:\n${nombreLimpio}_${codigo}.pdf`);
-});
+<script src="script.js"></script>
+</body>
+</html>
