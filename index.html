@@ -7,26 +7,24 @@
     <style>
         * { box-sizing: border-box; }
         body { 
-            font-family: 'Segoe UI', sans-serif; 
+            font-family: 'Segoe UI', Arial, sans-serif; 
             margin: 0; 
             display: flex; 
-            justify-content: center; /* Centra todo el contenido */
+            justify-content: center; 
             height: 100vh; 
-            background: #525659; /* Fondo gris oscuro tipo lector PDF */
+            background: #525659; 
         }
         
-        /* Contenedor Principal Limitado */
         .app-container {
             display: flex;
             width: 100%;
-            max-width: 1400px; /* Evita que se estire demasiado */
-            background: #f8f9fa;
-            box-shadow: 0 0 50px rgba(0,0,0,0.5);
+            max-width: 1200px;
+            background: #f4f4f4;
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
         }
 
-        /* Lateral Izquierdo: Configuración */
         .sidebar { 
-            width: 300px; 
+            width: 280px; 
             background: #ffffff; 
             padding: 20px; 
             display: flex; 
@@ -34,81 +32,65 @@
             gap: 15px; 
             border-right: 1px solid #ddd;
         }
-        
-        /* Navegador de Miniaturas */
-        .page-nav {
-            width: 150px;
-            background: #e9ecef;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 15px 0;
-            gap: 15px;
-        }
 
-        .page-thumb {
-            width: 100px;
-            height: 130px;
-            background: white;
-            cursor: pointer;
-            border: 1px solid #ccc;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.7rem;
-            transition: 0.2s;
-        }
-        .page-thumb canvas { width: 90%; height: auto; margin-top: 5px; }
-        .page-thumb:hover { border-color: #007bff; }
-        .page-thumb.active { border: 2px solid #28a745; background: #fff; }
-
-        /* Área Principal del Visor */
         .viewer-area { 
             flex-grow: 1; 
             overflow: auto; 
-            padding: 40px; 
+            padding: 20px; 
             display: flex; 
-            justify-content: center;
-            background: #525659;
+            flex-direction: column;
+            align-items: center;
+            background: #8e9194;
         }
         
         #canvas-container { 
             position: relative; 
             background: white; 
-            box-shadow: 0 0 20px rgba(0,0,0,0.3); 
+            box-shadow: 0 0 15px rgba(0,0,0,0.2); 
             display: none;
+            margin-top: 10px;
         }
         
-        #pdf-render { display: block; }
+        #pdf-render { display: block; border: 1px solid #ccc; }
         
+        /* Estilo de la Firma: Sin cuadro, mezcla con el fondo */
         #firma-flotante { 
             position: absolute; 
             cursor: move; 
-            width: 180px; 
+            width: 150px; 
             display: none; 
-            mix-blend-mode: multiply; /* Truco para quitar el fondo blanco de las fotos */
-            z-index: 1000;
-            border: 1px dashed transparent;
-        }
-        
-        #firma-flotante.moving {
-            border: 1px dashed #007bff;
-            opacity: 0.7;
+            mix-blend-mode: multiply; /* Esto quita el fondo blanco de la foto */
+            z-index: 100;
+            top: 0;
+            left: 0;
         }
 
-        h2 { font-size: 1.1rem; color: #d32f2f; margin: 0; }
-        label { font-size: 0.8rem; font-weight: bold; color: #555; }
-        input { padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.8rem; }
-        
-        .btn-enviar { 
-            background: #28a745; color: white; border: none; padding: 15px; 
-            border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: auto;
+        .controles-paginas {
+            margin-bottom: 10px;
+            display: none;
+            gap: 10px;
+            align-items: center;
+            background: white;
+            padding: 5px 15px;
+            border-radius: 20px;
         }
+
+        h2 { font-size: 1.1rem; color: #b71c1c; margin: 0; }
+        label { font-size: 0.8rem; font-weight: bold; color: #333; }
+        input { padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.8rem; width: 100%; }
         
-        .instrucciones { font-size: 0.75rem; color: #666; background: #fff3cd; padding: 10px; border-radius: 5px; }
+        button { 
+            padding: 10px; 
+            border-radius: 5px; 
+            border: 1px solid #ccc; 
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        .btn-enviar { 
+            background: #2e7d32; color: white; border: none; padding: 15px; 
+            font-weight: bold; margin-top: auto;
+        }
     </style>
 </head>
 <body>
@@ -116,35 +98,45 @@
 <div class="app-container">
     <div class="sidebar">
         <h2>Firmar Informe</h2>
-        <div class="instrucciones">
-            1. Sube PDF y Firma.<br>
-            2. Arrastra la firma.<br>
-            3. <b>Doble clic</b> para fijar.
-        </div>
-        
+        <hr>
         <label>Nombre del Profesor:</label>
         <input type="text" id="nombreProfesor" placeholder="EJ: ALEXANDRA ARAYA">
         
-        <label>1. Informe PDF:</label>
+        <label>1. Subir Informe (PDF):</label>
         <input type="file" id="pdfInput" accept="application/pdf">
         
-        <label>2. Foto de Firma:</label>
+        <label>2. Subir Firma (Imagen):</label>
         <input type="file" id="firmaInput" accept="image/*">
         
-        <button id="btnFirmar" class="btn-enviar" style="display:none;">GENERAR INFORME FINAL</button>
+        <div style="font-size: 0.7rem; color: #666; margin-top: 10px;">
+            <b>Instrucciones:</b><br>
+            - Usa las flechas para ir a la última página.<br>
+            - Arrastra la firma a su lugar.<br>
+            - Haz doble clic para fijar.
+        </div>
+        
+        <button id="btnFirmar" class="btn-enviar" style="display:none;">GENERAR DOCUMENTO</button>
     </div>
 
-    <div class="page-nav" id="page-nav" style="display:none;">
+    <div class="viewer-area">
+        <div id="controles" class="controles-paginas">
+            <button id="prev-page">◀ Anterior</button>
+            <span id="page-num-display">Página: 1 / 1</span>
+            <button id="next-page">Siguiente ▶</button>
         </div>
 
-    <div class="viewer-area">
         <div id="canvas-container">
             <canvas id="pdf-render"></canvas>
             <img id="firma-flotante" src="" alt="Firma">
         </div>
+        
+        <div id="mensaje-inicial" style="color: white; margin-top: 100px;">
+            <h3>Cargue un informe para comenzar</h3>
+        </div>
     </div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
 <script src="script.js"></script>
 </body>
 </html>
