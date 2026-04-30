@@ -5,7 +5,6 @@ let pdfDoc = null;
 let pageNum = 1;
 let nombreOriginal = "";
 
-// Variables para movimiento y redimensión
 let active = false;
 let resizerActive = false;
 let currentX, currentY, initialX, initialY;
@@ -53,26 +52,27 @@ function cambiarPagina(delta) {
 // 2. Cargar Firma
 document.getElementById('firmaInput').addEventListener('change', (e) => {
     const file = e.target.files[0];
+    if(!file) return;
     const reader = new FileReader();
     reader.onload = (event) => {
         const img = document.getElementById('firma-flotante');
         img.src = event.target.result;
         wrapper.style.display = 'block';
-        wrapper.classList.remove('confirmada'); // Reset a semitransparente
+        wrapper.classList.remove('confirmada');
+        wrapper.style.opacity = "0.4";
         document.getElementById('btnGenerar').style.display = 'block';
     };
     reader.readAsDataURL(file);
 });
 
-// 3. Lógica de Arrastrar (Drag)
+// 3. Movimiento (Drag) - Bloqueando comportamientos de sistema
 wrapper.addEventListener("mousedown", (e) => {
-    if (e.target === resizer) return; // Si toca el punto azul, no mueve
+    if (e.target === resizer) return;
     initialX = e.clientX - xOffset;
     initialY = e.clientY - yOffset;
     active = true;
 });
 
-// 4. Lógica de Redimensionar (Resize)
 resizer.addEventListener("mousedown", (e) => {
     resizerActive = true;
     e.stopPropagation();
@@ -86,7 +86,7 @@ document.addEventListener("mouseup", () => {
 
 document.addEventListener("mousemove", (e) => {
     if (active) {
-        e.preventDefault();
+        e.preventDefault(); // Evita el icono de "error" del navegador
         currentX = e.clientX - initialX;
         currentY = e.clientY - initialY;
         xOffset = currentX;
@@ -95,24 +95,29 @@ document.addEventListener("mousemove", (e) => {
     } else if (resizerActive) {
         const rect = wrapper.getBoundingClientRect();
         const newWidth = e.clientX - rect.left;
-        if (newWidth > 50) { // Tamaño mínimo
+        if (newWidth > 40) {
             wrapper.style.width = newWidth + "px";
         }
     }
 });
 
-// 5. Doble clic para Confirmar
-wrapper.addEventListener('dblclick', () => {
-    wrapper.classList.toggle('confirmada');
-    const isConfirmada = wrapper.classList.contains('confirmada');
-    if(isConfirmada) alert("✅ Firma fijada (Opacidad 100%)");
+// 4. Doble clic para Confirmar/Editar sin alertas
+wrapper.addEventListener('dblclick', (e) => {
+    e.preventDefault();
+    if (wrapper.classList.contains('confirmada')) {
+        wrapper.classList.remove('confirmada');
+        wrapper.style.opacity = "0.4";
+    } else {
+        wrapper.classList.add('confirmada');
+        wrapper.style.opacity = "1";
+    }
 });
 
-// 6. Botón Generar
+// 5. Nombre Final
 document.getElementById('btnGenerar').addEventListener('click', () => {
     const n = document.getElementById('nombreProfesor').value;
     if(!n) return alert("Escribe tu nombre");
     const limpio = n.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().trim().replace(/\s+/g, '_');
     const codigo = nombreOriginal.split('_')[0];
-    alert(`Listo: ${limpio}_${codigo}.pdf`);
+    alert(`Generando: ${limpio}_${codigo}.pdf`);
 });
