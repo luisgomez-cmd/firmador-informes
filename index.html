@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Firmador SIGI - IND</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;500;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
             --cem-hover: #78d64b;
@@ -17,7 +17,7 @@
             --btn-success: #16a34a;
         }
 
-        * { box-sizing: border-box; user-select: none; font-family: 'Outfit', sans-serif; }
+        * { box-sizing: border-box; user-select: none; font-family: 'Public Sans', sans-serif; }
         
         body { 
             margin: 0; display: flex; justify-content: center; align-items: center; 
@@ -32,7 +32,7 @@
         }
 
         .header-intro h1 { 
-            font-weight: 700; font-size: 2.5rem; letter-spacing: -1px; 
+            font-weight: 800; font-size: 2.8rem; letter-spacing: -1.5px; 
             color: var(--text-dark); margin-bottom: 70px; text-align: center;
         }
 
@@ -49,7 +49,7 @@
         #btn-cem-card:hover { border-color: var(--cem-hover); box-shadow: 0 15px 35px rgba(120, 214, 75, 0.2); transform: translateY(-8px); }
         #btn-dps-card:hover { border-color: var(--dps-hover); box-shadow: 0 15px 35px rgba(255, 143, 29, 0.2); transform: translateY(-8px); }
 
-        /* --- APP CONTAINER --- */
+        /* --- APP CONTAINER (ENCAPSULADO) --- */
         .app-wrapper {
             display: none; 
             width: 95%; max-width: 1200px; height: 85vh;
@@ -67,15 +67,14 @@
         .logo-area { height: 100px; margin-bottom: 30px; display: flex; justify-content: center; align-items: center; }
         .logo-area img { max-width: 100%; max-height: 100%; object-fit: contain; }
 
-        label { font-size: 0.8rem; font-weight: 700; color: #1a1a1a; text-transform: uppercase; margin-bottom: 8px; display: block; letter-spacing: 0.5px; }
+        label { font-size: 0.75rem; font-weight: 800; color: #1a1a1a; text-transform: uppercase; margin-bottom: 8px; display: block; letter-spacing: 0.5px; }
         
-        /* Ajuste: Fuente reducida para el nombre */
         input[type="text"] {
-            width: 100%; padding: 12px 18px; border: 2px solid #f3f4f6; border-radius: 14px;
+            width: 100%; padding: 14px 18px; border: 2px solid #f3f4f6; border-radius: 14px;
             margin-bottom: 20px; font-size: 1rem; font-weight: 500; background: #fafafa; outline: none; 
-            color: var(--text-dark);
+            color: var(--text-dark); transition: 0.2s;
         }
-        input[type="text"]::placeholder { font-size: 0.9rem; color: #bbb; }
+        input[type="text"]:focus { border-color: #ddd; background: #fff; }
 
         .upload-zone {
             display: block; padding: 14px; background: #ffffff; border-radius: 12px;
@@ -84,18 +83,19 @@
         }
         .upload-zone:hover { background: #f9fafb; border-color: #d1d5db; }
 
+        /* Guía de uso mejorada con Public Sans */
         .guia-rapida { margin-top: 5px; padding: 15px; background: #f1f5f9; border-radius: 18px; border: 1px solid #e2e8f0; margin-bottom: 20px;}
-        .guia-rapida span { display: block; font-size: 0.75rem; font-weight: 800; color: #475569; text-transform: uppercase; margin-bottom: 10px; }
+        .guia-rapida span { display: block; font-size: 0.7rem; font-weight: 800; color: #475569; text-transform: uppercase; margin-bottom: 12px; }
         .guia-item { display: flex; align-items: flex-start; gap: 10px; font-size: 0.8rem; color: #1e293b; margin-bottom: 8px; line-height: 1.3; font-weight: 500; }
         .guia-num { background: #334155; color: #ffffff; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 800; flex-shrink: 0; }
 
+        /* Estados del Botón Dinámico */
         .btn-main-action {
-            width: 100%; background: var(--text-dark); color: white; border: none; padding: 20px; 
-            font-weight: 700; cursor: pointer; border-radius: 18px; font-size: 0.9rem; 
+            width: 100%; background: var(--text-dark); color: white; border: none; padding: 22px; 
+            font-weight: 700; cursor: pointer; border-radius: 18px; font-size: 0.95rem; 
             transition: all 0.4s ease; letter-spacing: 0.5px; margin-top: auto;
         }
         .btn-main-action:hover:not(:disabled) { background: var(--btn-hover); transform: translateY(-2px); }
-        
         .btn-main-action.processing { background: var(--btn-processing) !important; cursor: wait; transform: none !important; }
         .btn-main-action.success { background: var(--btn-success) !important; cursor: default; transform: none !important; }
 
@@ -153,7 +153,7 @@
             </div>
             
             <button id="btnEnviar" class="btn-main-action" style="display:none">ENVIAR INFORME FIRMADO</button>
-            <button onclick="location.reload()" style="background:none; border:none; color:#bbb; cursor:pointer; font-size:0.7rem; margin-top:15px; text-decoration:underline">Cambiar de área</button>
+            <button onclick="location.reload()" style="background:none; border:none; color:#bbb; cursor:pointer; font-size:0.75rem; margin-top:15px; text-decoration:underline">Cambiar de área</button>
         </div>
 
         <div class="main-viewer">
