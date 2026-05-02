@@ -8,7 +8,6 @@ const URLS_SCRIPT = {
     'DPS': 'https://script.google.com/macros/s/AKfycbwYallAI9iyq8ODWsoVcPVkI_NnMQIvX7Ij3r6CDX7DBSfzDqZNp0Yw39R3urD5JXeZ/exec'
 };
 
-// --- NAVEGACIÓN ---
 window.seleccionarArea = function(area) {
     areaSeleccionada = area;
     document.getElementById('logo-sidebar').src = `logo_${area.toLowerCase()}.png`;
@@ -21,7 +20,6 @@ window.onpopstate = function() {
     location.reload();
 };
 
-// --- PDF ---
 document.getElementById('pdfInput').addEventListener('change', async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -54,7 +52,6 @@ window.cambiarPagina = function(delta) {
     }
 };
 
-// --- FIRMA ---
 let firmaImgData = null;
 const wrapper = document.getElementById('firma-wrapper');
 document.getElementById('firmaInput').addEventListener('change', (e) => {
@@ -99,7 +96,6 @@ wrapper.addEventListener('dblclick', () => {
     wrapper.classList.toggle('confirmada');
 });
 
-// --- ENVÍO ---
 document.getElementById('btnEnviar').addEventListener('click', async () => {
     const n = document.getElementById('nombreProfesor').value;
     const btn = document.getElementById('btnEnviar');
