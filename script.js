@@ -21,7 +21,7 @@ window.onpopstate = function() {
     location.reload();
 };
 
-// --- PDF ---
+// --- PROCESAMIENTO PDF ---
 document.getElementById('pdfInput').addEventListener('change', async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -54,7 +54,7 @@ window.cambiarPagina = function(delta) {
     }
 };
 
-// --- FIRMA ---
+// --- LÓGICA DE FIRMA ---
 let firmaImgData = null;
 const wrapper = document.getElementById('firma-wrapper');
 document.getElementById('firmaInput').addEventListener('change', (e) => {
@@ -99,7 +99,7 @@ wrapper.addEventListener('dblclick', () => {
     wrapper.classList.toggle('confirmada');
 });
 
-// --- ENVÍO CON ESTADOS DE BOTÓN ---
+// --- ENVÍO FINAL ---
 document.getElementById('btnEnviar').addEventListener('click', async () => {
     const n = document.getElementById('nombreProfesor').value;
     const btn = document.getElementById('btnEnviar');
@@ -107,7 +107,6 @@ document.getElementById('btnEnviar').addEventListener('click', async () => {
     if(!n) return alert("Escribe tu nombre.");
     if(!wrapper.classList.contains('confirmada')) return alert("Fija la firma con doble clic.");
 
-    // Estado: PROCESANDO (Azul)
     btn.disabled = true;
     btn.innerText = "PROCESANDO...";
     btn.classList.add('processing');
@@ -136,14 +135,12 @@ document.getElementById('btnEnviar').addEventListener('click', async () => {
         const limpio = n.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().trim().replace(/\s+/g, '_');
         const codigo = nombreOriginal.split('_')[0];
         
-        // Envío
         await fetch(URLS_SCRIPT[areaSeleccionada], {
             method: 'POST',
             body: JSON.stringify({ base64: pdfBase64, filename: `${limpio}_${codigo}.pdf` }),
             mode: 'no-cors'
         });
 
-        // Estado: ENVIADO (Verde)
         btn.classList.remove('processing');
         btn.classList.add('success');
         btn.innerText = "¡ENVIADO!";
