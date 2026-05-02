@@ -31,26 +31,30 @@
         }
 
         .header-intro h1 { 
-            font-weight: 700; font-size: 2.2rem; letter-spacing: -1px; 
+            font-weight: 700; font-size: 2.5rem; letter-spacing: -1px; 
             color: var(--text-dark); margin-bottom: 70px; text-align: center;
         }
 
-        .selector-horizontal { display: flex; gap: 50px; justify-content: center; }
+        .selector-horizontal { display: flex; gap: 50px; justify-content: center; align-items: center; }
 
         .btn-area-card {
             width: 380px; height: 260px; background: #ffffff; border: 2px solid #f0f0f0;
             border-radius: 28px; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            display: flex; justify-content: center; align-items: center; padding: 20px;
+            display: flex; justify-content: center; align-items: center; padding: 40px;
         }
 
-        .btn-area-card img { width: 90%; height: 90%; object-fit: contain; }
+        /* Ajuste de logos para que se vean iguales */
+        .btn-area-card img { 
+            width: 100%; height: 100%; object-fit: contain; 
+            display: block; margin: auto;
+        }
 
         #btn-cem-card:hover { border-color: var(--cem-hover); box-shadow: 0 15px 35px rgba(120, 214, 75, 0.2); transform: translateY(-8px); }
         #btn-dps-card:hover { border-color: var(--dps-hover); box-shadow: 0 15px 35px rgba(255, 143, 29, 0.2); transform: translateY(-8px); }
 
         /* --- APP CONTAINER (BOXED) --- */
         .app-wrapper {
-            display: none; /* Se activa al elegir área */
+            display: none; 
             width: 95%; max-width: 1200px; height: 85vh;
             background: var(--bg-app); border-radius: 35px;
             overflow: hidden; box-shadow: 0 50px 100px rgba(0,0,0,0.25);
@@ -59,36 +63,37 @@
 
         /* --- SIDEBAR --- */
         .sidebar { 
-            width: 340px; background: #ffffff; padding: 40px 35px; 
+            width: 360px; background: #ffffff; padding: 45px 35px; 
             display: flex; flex-direction: column; border-right: 1px solid #f3f4f6;
         }
 
-        .logo-area { height: 80px; margin-bottom: 40px; display: flex; justify-content: center; align-items: center; }
+        /* Logo visor más grande */
+        .logo-area { height: 110px; margin-bottom: 40px; display: flex; justify-content: center; align-items: center; }
         .logo-area img { max-width: 100%; max-height: 100%; object-fit: contain; }
 
-        label { font-size: 0.65rem; font-weight: 700; color: #b1b1b1; text-transform: uppercase; margin-bottom: 8px; display: block; letter-spacing: 0.5px; }
+        label { font-size: 0.8rem; font-weight: 700; color: #1a1a1a; text-transform: uppercase; margin-bottom: 10px; display: block; letter-spacing: 0.5px; }
         
         input[type="text"] {
-            width: 100%; padding: 14px 18px; border: 2px solid #f3f4f6; border-radius: 14px;
-            margin-bottom: 25px; font-size: 0.9rem; background: #fafafa; outline: none; transition: 0.3s;
+            width: 100%; padding: 16px 20px; border: 2px solid #f3f4f6; border-radius: 14px;
+            margin-bottom: 30px; font-size: 1rem; background: #fafafa; outline: none; transition: 0.3s;
         }
         input[type="text"]:focus { border-color: #e5e7eb; background: #fff; }
 
         .upload-zone {
-            display: block; padding: 14px; background: #ffffff; border-radius: 12px;
-            font-size: 0.75rem; color: #555; cursor: pointer; margin-bottom: 15px;
+            display: block; padding: 16px; background: #ffffff; border-radius: 12px;
+            font-size: 0.85rem; color: #555; cursor: pointer; margin-bottom: 20px;
             text-align: center; border: 2px solid #f3f4f6; font-weight: 600; transition: 0.2s;
         }
         .upload-zone:hover { background: #f9fafb; border-color: #d1d5db; }
 
         .guia-rapida { margin-top: 10px; padding: 20px; background: #f8fafc; border-radius: 18px; border: 1px solid #f1f5f9; }
-        .guia-rapida span { display: block; font-size: 0.65rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; margin-bottom: 10px; }
-        .guia-item { display: flex; align-items: flex-start; gap: 10px; font-size: 0.75rem; color: #475569; margin-bottom: 8px; line-height: 1.3; }
-        .guia-num { background: #e2e8f0; color: #64748b; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: 800; flex-shrink: 0; }
+        .guia-rapida span { display: block; font-size: 0.75rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; margin-bottom: 12px; }
+        .guia-item { display: flex; align-items: flex-start; gap: 10px; font-size: 0.8rem; color: #475569; margin-bottom: 10px; line-height: 1.4; }
+        .guia-num { background: #e2e8f0; color: #64748b; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 800; flex-shrink: 0; }
 
         .btn-main-action {
-            width: 100%; background: var(--text-dark); color: white; border: none; padding: 22px; 
-            font-weight: 700; cursor: pointer; border-radius: 18px; font-size: 0.9rem; 
+            width: 100%; background: var(--text-dark); color: white; border: none; padding: 24px; 
+            font-weight: 700; cursor: pointer; border-radius: 18px; font-size: 1rem; 
             margin-top: auto; transition: all 0.3s; letter-spacing: 0.5px;
         }
         .btn-main-action:hover:not(:disabled) { background: var(--btn-hover); transform: translateY(-3px); }
@@ -96,18 +101,25 @@
 
         /* --- VISOR --- */
         .main-viewer { flex-grow: 1; background: var(--bg-canvas); display: flex; flex-direction: column; align-items: center; padding: 25px; overflow: hidden; }
-        .viewer-nav { background: rgba(255, 255, 255, 0.95); padding: 10px 25px; border-radius: 18px; display: none; align-items: center; gap: 25px; margin-bottom: 25px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        .viewer-nav { background: rgba(255, 255, 255, 0.95); padding: 12px 30px; border-radius: 18px; display: none; align-items: center; gap: 25px; margin-bottom: 25px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
         .nav-btn { background: #f1f5f9; border: none; width: 40px; height: 40px; border-radius: 12px; cursor: pointer; font-weight: bold; }
         
         .pdf-scroll-area { width: 100%; height: 100%; overflow: auto; display: flex; justify-content: center; padding-bottom: 60px; scrollbar-width: none; }
-        #canvas-container { background: white; box-shadow: 0 30px 70px rgba(0,0,0,0.15); position: relative; display: none; }
+        
+        /* SIN SOMBRA EN PDF */
+        #canvas-container { background: white; box-shadow: none; position: relative; display: none; }
         #pdf-render { display: block; }
 
-        #firma-wrapper { position: absolute; border: 2px dashed #3b82f6; opacity: 0.5; cursor: move; display: none; z-index: 100; }
+        /* Firma controlada */
+        #firma-wrapper { 
+            position: absolute; border: 2px dashed #3b82f6; opacity: 0.5; 
+            cursor: move; display: none; z-index: 100;
+            width: 150px; height: auto; /* Tamaño inicial controlado */
+        }
         #firma-wrapper.confirmada { border: none; opacity: 1; }
         .resizer-dot { width: 14px; height: 14px; background: #3b82f6; position: absolute; right: -7px; bottom: -7px; border-radius: 50%; border: 2px solid white; cursor: nwse-resize; }
         
-        #loading-msg { font-size: 0.7rem; color: #ef4444; font-weight: 700; text-align: center; margin-top: 10px; display: none; }
+        #loading-msg { font-size: 0.8rem; color: #ef4444; font-weight: 700; text-align: center; margin-top: 10px; display: none; }
     </style>
 </head>
 <body>
@@ -116,10 +128,10 @@
         <div class="header-intro"><h1>Firmar Informes SIGI</h1></div>
         <div class="selector-horizontal">
             <div class="btn-area-card" id="btn-cem-card" onclick="window.seleccionarArea('CEM')">
-                <img src="https://raw.githubusercontent.com/luisgomez-cmd/firmador-informes/main/logo_cem.png" alt="CEM">
+                <img src="logo_cem.png" alt="CEM">
             </div>
             <div class="btn-area-card" id="btn-dps-card" onclick="window.seleccionarArea('DPS')">
-                <img src="https://raw.githubusercontent.com/luisgomez-cmd/firmador-informes/main/logo_dps.png" alt="DPS">
+                <img src="logo_dps.png" alt="DPS">
             </div>
         </div>
     </div>
@@ -129,27 +141,31 @@
             <div class="logo-area"><img id="logo-sidebar" src="" alt="Logo"></div>
             <label>Nombre y Apellido</label>
             <input type="text" id="nombreProfesor" placeholder="Ej. Marcela Paz">
+            
             <label>1. Documento Informe</label>
             <input type="file" id="pdfInput" accept=".pdf" style="display:none">
             <div class="upload-zone" onclick="document.getElementById('pdfInput').click()">Seleccionar archivo PDF</div>
+            
             <label>2. Firma Digital</label>
             <input type="file" id="firmaInput" accept="image/*" style="display:none">
             <div class="upload-zone" onclick="document.getElementById('firmaInput').click()">Seleccionar imagen</div>
+            
             <div class="guia-rapida">
                 <span>Guía de uso</span>
                 <div class="guia-item"><div class="guia-num">1</div><div>Ubica la firma arrastrándola.</div></div>
                 <div class="guia-item"><div class="guia-num">2</div><div>Doble clic sobre ella para fijarla.</div></div>
                 <div class="guia-item"><div class="guia-num">3</div><div>Usa el punto azul para escalar.</div></div>
             </div>
+            
             <button id="btnEnviar" class="btn-main-action" style="display:none">ENVIAR INFORME FIRMADO</button>
             <div id="loading-msg">Procesando y subiendo... espera.</div>
-            <button onclick="location.reload()" style="background:none; border:none; color:#bbb; cursor:pointer; font-size:0.6rem; margin-top:15px; text-decoration:underline">Cambiar de área</button>
+            <button onclick="location.reload()" style="background:none; border:none; color:#bbb; cursor:pointer; font-size:0.7rem; margin-top:15px; text-decoration:underline">Cambiar de área</button>
         </div>
 
         <div class="main-viewer">
             <div class="viewer-nav" id="viewer-nav">
                 <button class="nav-btn" onclick="window.cambiarPagina(-1)">◀</button>
-                <span id="page-info" style="font-size:0.85rem; font-weight:700; color:#1e293b">PÁGINA 1 / 1</span>
+                <span id="page-info" style="font-size:0.9rem; font-weight:700; color:#1e293b">PÁGINA 1 / 1</span>
                 <button class="nav-btn" onclick="window.cambiarPagina(1)">▶</button>
             </div>
             <div class="pdf-scroll-area">
