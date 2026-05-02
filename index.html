@@ -27,7 +27,6 @@
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #ffffff; display: flex; flex-direction: column; 
             justify-content: center; align-items: center; z-index: 2000;
-            transition: opacity 0.5s ease;
         }
 
         .header-intro h1 { 
@@ -68,12 +67,13 @@
 
         label { font-size: 0.8rem; font-weight: 700; color: #1a1a1a; text-transform: uppercase; margin-bottom: 8px; display: block; letter-spacing: 0.5px; }
         
+        /* CORRECCIÓN: Tamaño de letra uniforme en input */
         input[type="text"] {
             width: 100%; padding: 14px 18px; border: 2px solid #f3f4f6; border-radius: 14px;
-            margin-bottom: 20px; font-size: 1rem; background: #fafafa; outline: none; 
-            transition: border-color 0.3s; /* Sin blur */
+            margin-bottom: 20px; font-size: 1.2rem; font-weight: 500; background: #fafafa; outline: none; 
+            color: var(--text-dark);
         }
-        input[type="text"]:focus { border-color: #e5e7eb; background: #fff; }
+        input[type="text"]::placeholder { font-size: 1rem; color: #bbb; }
 
         .upload-zone {
             display: block; padding: 14px; background: #ffffff; border-radius: 12px;
@@ -82,19 +82,18 @@
         }
         .upload-zone:hover { background: #f9fafb; border-color: #d1d5db; }
 
-        .guia-rapida { margin-top: 5px; padding: 15px; background: #f8fafc; border-radius: 18px; border: 1px solid #f1f5f9; margin-bottom: 20px;}
-        .guia-rapida span { display: block; font-size: 0.75rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; margin-bottom: 10px; }
-        .guia-item { display: flex; align-items: flex-start; gap: 10px; font-size: 0.8rem; color: #475569; margin-bottom: 8px; line-height: 1.3; }
-        .guia-num { background: #e2e8f0; color: #64748b; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 800; flex-shrink: 0; }
+        /* CORRECCIÓN: Guía de uso más visible */
+        .guia-rapida { margin-top: 5px; padding: 15px; background: #f1f5f9; border-radius: 18px; border: 1px solid #e2e8f0; margin-bottom: 20px;}
+        .guia-rapida span { display: block; font-size: 0.75rem; font-weight: 800; color: #475569; text-transform: uppercase; margin-bottom: 10px; }
+        .guia-item { display: flex; align-items: flex-start; gap: 10px; font-size: 0.8rem; color: #1e293b; margin-bottom: 8px; line-height: 1.3; font-weight: 500; }
+        .guia-num { background: #334155; color: #ffffff; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 800; flex-shrink: 0; }
 
-        /* Ajuste de márgenes del botón */
         .btn-main-action {
             width: 100%; background: var(--text-dark); color: white; border: none; padding: 20px; 
             font-weight: 700; cursor: pointer; border-radius: 18px; font-size: 1rem; 
             transition: all 0.3s; letter-spacing: 0.5px; margin-top: auto;
         }
         .btn-main-action:hover:not(:disabled) { background: var(--btn-hover); transform: translateY(-2px); }
-        .btn-main-action:disabled { background: #ccc; cursor: not-allowed; }
 
         /* --- VISOR --- */
         .main-viewer { flex-grow: 1; background: var(--bg-canvas); display: flex; flex-direction: column; align-items: center; padding: 25px; overflow: hidden; }
@@ -148,7 +147,7 @@
                 <span>Guía de uso</span>
                 <div class="guia-item"><div class="guia-num">1</div><div>Ubica la firma arrastrándola.</div></div>
                 <div class="guia-item"><div class="guia-num">2</div><div>Doble clic para fijarla.</div></div>
-                <div class="guia-item"><div class="guia-num">3</div><div>Usa el punto azul para escalar.</div></div>
+                <div class="guia-item"><div class="guia-num">3</div><div>Usa el punto azul para ajustar dimensiones.</div></div>
             </div>
             
             <button id="btnEnviar" class="btn-main-action" style="display:none">ENVIAR INFORME FIRMADO</button>
