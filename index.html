@@ -4,20 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Firmador SIGI - IND</title>
-    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;500;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
             --cem-hover: #78d64b;
             --dps-hover: #ff8f1d;
             --bg-canvas: #e5e7eb;
             --bg-app: #ffffff;
-            --text-dark: #1a1a1a;
-            --btn-hover: #334155;
+            --text-dark: #111827;
+            --btn-hover: #374151;
             --btn-processing: #2563eb;
-            --btn-success: #16a34a;
+            --btn-success: #10b981;
         }
 
-        * { box-sizing: border-box; user-select: none; font-family: 'Public Sans', sans-serif; }
+        * { box-sizing: border-box; user-select: none; font-family: 'Inter', sans-serif; }
         
         body { 
             margin: 0; display: flex; justify-content: center; align-items: center; 
@@ -32,29 +32,29 @@
         }
 
         .header-intro h1 { 
-            font-weight: 800; font-size: 2.8rem; letter-spacing: -1.5px; 
+            font-weight: 800; font-size: 2.5rem; letter-spacing: -0.04em; 
             color: var(--text-dark); margin-bottom: 70px; text-align: center;
         }
 
         .selector-horizontal { display: flex; gap: 50px; justify-content: center; align-items: center; }
 
         .btn-area-card {
-            width: 380px; height: 260px; background: #ffffff; border: 2px solid #f0f0f0;
+            width: 380px; height: 260px; background: #ffffff; border: 1px solid #e5e7eb;
             border-radius: 28px; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             display: flex; justify-content: center; align-items: center; padding: 40px;
         }
 
         .btn-area-card img { width: 100%; height: 100%; object-fit: contain; display: block; margin: auto; }
 
-        #btn-cem-card:hover { border-color: var(--cem-hover); box-shadow: 0 15px 35px rgba(120, 214, 75, 0.2); transform: translateY(-8px); }
-        #btn-dps-card:hover { border-color: var(--dps-hover); box-shadow: 0 15px 35px rgba(255, 143, 29, 0.2); transform: translateY(-8px); }
+        #btn-cem-card:hover { border-color: var(--cem-hover); box-shadow: 0 20px 40px rgba(120, 214, 75, 0.15); transform: translateY(-8px); }
+        #btn-dps-card:hover { border-color: var(--dps-hover); box-shadow: 0 20px 40px rgba(255, 143, 29, 0.15); transform: translateY(-8px); }
 
-        /* --- APP CONTAINER (ENCAPSULADO) --- */
+        /* --- APP CONTAINER --- */
         .app-wrapper {
             display: none; 
             width: 95%; max-width: 1200px; height: 85vh;
             background: var(--bg-app); border-radius: 35px;
-            overflow: hidden; box-shadow: 0 50px 100px rgba(0,0,0,0.25);
+            overflow: hidden; box-shadow: 0 50px 100px rgba(0,0,0,0.2);
             position: relative;
         }
 
@@ -67,54 +67,50 @@
         .logo-area { height: 100px; margin-bottom: 30px; display: flex; justify-content: center; align-items: center; }
         .logo-area img { max-width: 100%; max-height: 100%; object-fit: contain; }
 
-        label { font-size: 0.75rem; font-weight: 800; color: #1a1a1a; text-transform: uppercase; margin-bottom: 8px; display: block; letter-spacing: 0.5px; }
+        label { font-size: 0.75rem; font-weight: 700; color: #6b7280; text-transform: uppercase; margin-bottom: 8px; display: block; letter-spacing: 0.05em; }
         
         input[type="text"] {
-            width: 100%; padding: 14px 18px; border: 2px solid #f3f4f6; border-radius: 14px;
-            margin-bottom: 20px; font-size: 1rem; font-weight: 500; background: #fafafa; outline: none; 
-            color: var(--text-dark); transition: 0.2s;
+            width: 100%; padding: 12px 16px; border: 1px solid #e5e7eb; border-radius: 12px;
+            margin-bottom: 20px; font-size: 1rem; font-weight: 500; background: #f9fafb; outline: none; 
+            color: var(--text-dark);
         }
-        input[type="text"]:focus { border-color: #ddd; background: #fff; }
 
         .upload-zone {
             display: block; padding: 14px; background: #ffffff; border-radius: 12px;
-            font-size: 0.85rem; color: #555; cursor: pointer; margin-bottom: 15px;
-            text-align: center; border: 2px solid #f3f4f6; font-weight: 600; transition: 0.2s;
+            font-size: 0.85rem; color: #374151; cursor: pointer; margin-bottom: 15px;
+            text-align: center; border: 1px solid #e5e7eb; font-weight: 600; transition: 0.2s;
         }
         .upload-zone:hover { background: #f9fafb; border-color: #d1d5db; }
 
-        /* Guía de uso mejorada con Public Sans */
-        .guia-rapida { margin-top: 5px; padding: 15px; background: #f1f5f9; border-radius: 18px; border: 1px solid #e2e8f0; margin-bottom: 20px;}
-        .guia-rapida span { display: block; font-size: 0.7rem; font-weight: 800; color: #475569; text-transform: uppercase; margin-bottom: 12px; }
-        .guia-item { display: flex; align-items: flex-start; gap: 10px; font-size: 0.8rem; color: #1e293b; margin-bottom: 8px; line-height: 1.3; font-weight: 500; }
-        .guia-num { background: #334155; color: #ffffff; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 800; flex-shrink: 0; }
+        .guia-rapida { margin-top: 5px; padding: 15px; background: #f3f4f6; border-radius: 18px; border: 1px solid #e5e7eb; margin-bottom: 20px;}
+        .guia-rapida span { display: block; font-size: 0.7rem; font-weight: 800; color: #4b5563; text-transform: uppercase; margin-bottom: 10px; }
+        .guia-item { display: flex; align-items: flex-start; gap: 10px; font-size: 0.75rem; color: #1f2937; margin-bottom: 8px; line-height: 1.4; font-weight: 500; }
+        .guia-num { background: #111827; color: #ffffff; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: 700; flex-shrink: 0; }
 
-        /* Estados del Botón Dinámico */
         .btn-main-action {
-            width: 100%; background: var(--text-dark); color: white; border: none; padding: 22px; 
-            font-weight: 700; cursor: pointer; border-radius: 18px; font-size: 0.95rem; 
-            transition: all 0.4s ease; letter-spacing: 0.5px; margin-top: auto;
+            width: 100%; background: var(--text-dark); color: white; border: none; padding: 20px; 
+            font-weight: 700; cursor: pointer; border-radius: 16px; font-size: 0.95rem; 
+            transition: all 0.3s ease; letter-spacing: 0.02em; margin-top: auto;
         }
         .btn-main-action:hover:not(:disabled) { background: var(--btn-hover); transform: translateY(-2px); }
-        .btn-main-action.processing { background: var(--btn-processing) !important; cursor: wait; transform: none !important; }
-        .btn-main-action.success { background: var(--btn-success) !important; cursor: default; transform: none !important; }
+        .btn-main-action.processing { background: var(--btn-processing) !important; cursor: wait; }
+        .btn-main-action.success { background: var(--btn-success) !important; cursor: default; }
 
         /* --- VISOR --- */
         .main-viewer { flex-grow: 1; background: var(--bg-canvas); display: flex; flex-direction: column; align-items: center; padding: 25px; overflow: hidden; }
         .viewer-nav { background: rgba(255, 255, 255, 0.95); padding: 10px 25px; border-radius: 18px; display: none; align-items: center; gap: 20px; margin-bottom: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
-        .nav-btn { background: #f1f5f9; border: none; width: 35px; height: 35px; border-radius: 10px; cursor: pointer; font-weight: bold; }
+        .nav-btn { background: #f3f4f6; border: none; width: 35px; height: 35px; border-radius: 10px; cursor: pointer; font-weight: bold; }
         
         .pdf-scroll-area { width: 100%; height: 100%; overflow: auto; display: flex; justify-content: center; padding-bottom: 60px; scrollbar-width: none; }
         #canvas-container { background: white; position: relative; display: none; }
         #pdf-render { display: block; }
 
         #firma-wrapper { 
-            position: absolute; border: 2px dashed #3b82f6; opacity: 0.5; 
-            cursor: move; display: none; z-index: 100;
-            width: 150px; 
+            position: absolute; border: 2px dashed #2563eb; opacity: 0.5; 
+            cursor: move; display: none; z-index: 100; width: 150px; 
         }
         #firma-wrapper.confirmada { border: none; opacity: 1; }
-        .resizer-dot { width: 14px; height: 14px; background: #3b82f6; position: absolute; right: -7px; bottom: -7px; border-radius: 50%; border: 2px solid white; cursor: nwse-resize; }
+        .resizer-dot { width: 12px; height: 12px; background: #2563eb; position: absolute; right: -6px; bottom: -6px; border-radius: 50%; border: 2px solid white; cursor: nwse-resize; }
     </style>
 </head>
 <body>
@@ -153,13 +149,13 @@
             </div>
             
             <button id="btnEnviar" class="btn-main-action" style="display:none">ENVIAR INFORME FIRMADO</button>
-            <button onclick="location.reload()" style="background:none; border:none; color:#bbb; cursor:pointer; font-size:0.75rem; margin-top:15px; text-decoration:underline">Cambiar de área</button>
+            <button onclick="location.reload()" style="background:none; border:none; color:#9ca3af; cursor:pointer; font-size:0.7rem; margin-top:15px; text-decoration:underline">Cambiar de área</button>
         </div>
 
         <div class="main-viewer">
             <div class="viewer-nav" id="viewer-nav">
                 <button class="nav-btn" onclick="window.cambiarPagina(-1)">◀</button>
-                <span id="page-info" style="font-size:0.9rem; font-weight:700; color:#1e293b">PÁGINA 1 / 1</span>
+                <span id="page-info" style="font-size:0.85rem; font-weight:700; color:#111827">PÁGINA 1 / 1</span>
                 <button class="nav-btn" onclick="window.cambiarPagina(1)">▶</button>
             </div>
             <div class="pdf-scroll-area">
