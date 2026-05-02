@@ -8,10 +8,9 @@ const URLS_SCRIPT = {
     'DPS': 'https://script.google.com/macros/s/AKfycbwYallAI9iyq8ODWsoVcPVkI_NnMQIvX7Ij3r6CDX7DBSfzDqZNp0Yw39R3urD5JXeZ/exec'
 };
 
-// --- INICIO ---
 window.seleccionarArea = function(area) {
     areaSeleccionada = area;
-    document.getElementById('logo-sidebar').src = `https://raw.githubusercontent.com/luisgomez-cmd/firmador-informes/main/logo_${area.toLowerCase()}.png`;
+    document.getElementById('logo-sidebar').src = `logo_${area.toLowerCase()}.png`;
     document.getElementById('pantalla-inicio').style.opacity = '0';
     setTimeout(() => {
         document.getElementById('pantalla-inicio').style.display = 'none';
@@ -19,7 +18,6 @@ window.seleccionarArea = function(area) {
     }, 500);
 };
 
-// --- PDF LOGIC ---
 document.getElementById('pdfInput').addEventListener('change', async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -52,7 +50,6 @@ window.cambiarPagina = function(delta) {
     }
 };
 
-// --- FIRMA LOGIC ---
 let firmaImgData = null;
 const wrapper = document.getElementById('firma-wrapper');
 document.getElementById('firmaInput').addEventListener('change', (e) => {
@@ -61,6 +58,12 @@ document.getElementById('firmaInput').addEventListener('change', (e) => {
     reader.onload = (event) => {
         firmaImgData = event.target.result;
         document.getElementById('firma-img').src = firmaImgData;
+        
+        // Reset posición y tamaño para que no aparezca gigante ni abajo
+        xOffset = 50; yOffset = 50;
+        wrapper.style.transform = `translate3d(50px, 50px, 0)`;
+        wrapper.style.width = "150px"; 
+        
         wrapper.style.display = 'block';
         wrapper.classList.remove('confirmada');
         document.getElementById('btnEnviar').style.display = 'block';
@@ -68,7 +71,6 @@ document.getElementById('firmaInput').addEventListener('change', (e) => {
     reader.readAsDataURL(file);
 });
 
-// MOVIMIENTO
 let active = false, resizerActive = false, currentX, currentY, initialX, initialY, xOffset = 0, yOffset = 0;
 wrapper.addEventListener("mousedown", (e) => {
     if (e.target.classList.contains('resizer-dot')) return;
@@ -94,7 +96,6 @@ wrapper.addEventListener('dblclick', () => {
     wrapper.classList.toggle('confirmada');
 });
 
-// --- ENVÍO FINAL ---
 document.getElementById('btnEnviar').addEventListener('click', async () => {
     const n = document.getElementById('nombreProfesor').value;
     if(!n) return alert("Escribe tu nombre.");
