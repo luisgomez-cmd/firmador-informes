@@ -26,7 +26,7 @@ window.onpopstate = function() {
     location.reload();
 };
 
-// --- HISTORIAL (LOCALSTORAGE) ---
+// --- HISTORIAL CON ALINEACIÓN FIJA ---
 function guardarEnHistorial(area, nombreArchivo) {
     const registro = {
         area: area,
@@ -40,26 +40,47 @@ function guardarEnHistorial(area, nombreArchivo) {
 
 function renderizarHistorial() {
     const contenedor = document.getElementById('historial-container');
-    const lista = document.getElementById('lista-historial');
+    const colCem = document.getElementById('col-cem');
+    const colDps = document.getElementById('col-dps');
     const ahora = new Date().getTime();
     const DOS_DIAS = 2 * 24 * 60 * 60 * 1000;
 
     let historial = JSON.parse(localStorage.getItem('historial_sigi') || '[]');
     
-    // Filtro: solo lo de las últimas 48 horas
+    // Filtro 48h
     historial = historial.filter(item => (ahora - item.fecha) < DOS_DIAS);
     localStorage.setItem('historial_sigi', JSON.stringify(historial));
 
     if (historial.length > 0) {
         contenedor.style.display = 'block';
-        // Mostramos los más recientes primero (reverse)
-        lista.innerHTML = historial.reverse().map(item => `
-            <div class="card-historial">
-                <span class="tag tag-${item.area.toLowerCase()}">${item.area}</span>
-                <span class="file-name" title="${item.nombreArchivo}">${item.nombreArchivo}</span>
-                <span class="date">${new Date(item.fecha).toLocaleString('es-CL', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</span>
-            </div>
-        `).join('');
+        
+        // Limpiar columnas
+        colCem.innerHTML = "";
+        colDps.innerHTML = "";
+
+        // Ordenar por fecha (más reciente arriba)
+        historial.sort((a, b) => b.fecha - a.fecha);
+
+        historial.forEach(item => {
+            const fechaObj = new Date(item.fecha);
+            // Formatear fecha con 0 inicial (02/05)
+            const dia = String(fechaObj.getDate()).padStart(2, '0');
+            const mes = String(fechaObj.getMonth() + 1).padStart(2, '0');
+            const hora = String(fechaObj.getHours()).padStart(2, '0');
+            const min = String(fechaObj.getMinutes()).padStart(2, '0');
+            const fechaFormateada = `${dia}/${mes}, ${hora}:${min} hrs.`;
+
+            const cardHtml = `
+                <div class="card-historial">
+                    <span class="tag tag-${item.area.toLowerCase()}">${item.area}</span>
+                    <span class="file-name" title="${item.nombreArchivo}">${item.nombreArchivo}</span>
+                    <span class="date">${fechaFormateada}</span>
+                </div>
+            `;
+
+            if (item.area === 'CEM') colCem.innerHTML += cardHtml;
+            else if (item.area === 'DPS') colDps.innerHTML += cardHtml;
+        });
     }
 }
 
@@ -141,7 +162,7 @@ wrapper.addEventListener('dblclick', () => {
     wrapper.classList.toggle('confirmada');
 });
 
-// --- ENVÍO FINAL ---
+// --- ENVÍO ---
 document.getElementById('btnEnviar').addEventListener('click', async () => {
     const n = document.getElementById('nombreProfesor').value;
     const btn = document.getElementById('btnEnviar');
@@ -184,7 +205,6 @@ document.getElementById('btnEnviar').addEventListener('click', async () => {
             mode: 'no-cors'
         });
 
-        // Guardar en historial antes de recargar
         guardarEnHistorial(areaSeleccionada, nombreFinal);
 
         btn.classList.remove('processing');
