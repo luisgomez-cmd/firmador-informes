@@ -8,26 +8,20 @@ const URLS_SCRIPT = {
     'DPS': 'https://script.google.com/macros/s/AKfycbwYallAI9iyq8ODWsoVcPVkI_NnMQIvX7Ij3r6CDX7DBSfzDqZNp0Yw39R3urD5JXeZ/exec'
 };
 
-// --- CONTROL DE NAVEGACIÓN "ATRÁS" ---
+// --- NAVEGACIÓN ---
 window.seleccionarArea = function(area) {
     areaSeleccionada = area;
     document.getElementById('logo-sidebar').src = `logo_${area.toLowerCase()}.png`;
-    
-    // Cambiamos visualmente
     document.getElementById('pantalla-inicio').style.display = 'none';
     document.getElementById('app-main').style.display = 'flex';
-    
-    // Guardamos un estado en el historial para poder volver atrás
     history.pushState({view: 'app'}, '');
 };
 
-// Si el usuario presiona "atrás" en el navegador
-window.onpopstate = function(event) {
-    // Si vuelve al estado inicial (sin datos en el event.state), recargamos para ir al inicio
+window.onpopstate = function() {
     location.reload();
 };
 
-// --- LÓGICA DE PDF ---
+// --- PDF ---
 document.getElementById('pdfInput').addEventListener('change', async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -60,7 +54,7 @@ window.cambiarPagina = function(delta) {
     }
 };
 
-// --- LÓGICA DE FIRMA ---
+// --- FIRMA ---
 let firmaImgData = null;
 const wrapper = document.getElementById('firma-wrapper');
 document.getElementById('firmaInput').addEventListener('change', (e) => {
@@ -69,14 +63,10 @@ document.getElementById('firmaInput').addEventListener('change', (e) => {
     reader.onload = (event) => {
         firmaImgData = event.target.result;
         document.getElementById('firma-img').src = firmaImgData;
-        
-        xOffset = 50; 
-        yOffset = 50;
+        xOffset = 50; yOffset = 50;
         wrapper.style.transform = `translate3d(50px, 50px, 0)`;
         wrapper.style.width = "150px"; 
-        wrapper.style.top = "0px"; 
-        wrapper.style.left = "0px";
-        
+        wrapper.style.top = "0px"; wrapper.style.left = "0px";
         wrapper.style.display = 'block';
         wrapper.classList.remove('confirmada');
         document.getElementById('btnEnviar').style.display = 'block';
@@ -109,15 +99,18 @@ wrapper.addEventListener('dblclick', () => {
     wrapper.classList.toggle('confirmada');
 });
 
-// --- ENVÍO FINAL ---
+// --- ENVÍO CON ESTADOS DE BOTÓN ---
 document.getElementById('btnEnviar').addEventListener('click', async () => {
     const n = document.getElementById('nombreProfesor').value;
+    const btn = document.getElementById('btnEnviar');
+    
     if(!n) return alert("Escribe tu nombre.");
     if(!wrapper.classList.contains('confirmada')) return alert("Fija la firma con doble clic.");
 
-    const btn = document.getElementById('btnEnviar');
-    const load = document.getElementById('loading-msg');
-    btn.disabled = true; load.style.display = 'block';
+    // Estado: PROCESANDO (Azul)
+    btn.disabled = true;
+    btn.innerText = "PROCESANDO...";
+    btn.classList.add('processing');
 
     try {
         const pdfLibDoc = await PDFDocument.load(pdfBytesOriginal);
@@ -143,19 +136,27 @@ document.getElementById('btnEnviar').addEventListener('click', async () => {
         const limpio = n.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().trim().replace(/\s+/g, '_');
         const codigo = nombreOriginal.split('_')[0];
         
-        fetch(URLS_SCRIPT[areaSeleccionada], {
+        // Envío
+        await fetch(URLS_SCRIPT[areaSeleccionada], {
             method: 'POST',
             body: JSON.stringify({ base64: pdfBase64, filename: `${limpio}_${codigo}.pdf` }),
             mode: 'no-cors'
         });
 
+        // Estado: ENVIADO (Verde)
+        btn.classList.remove('processing');
+        btn.classList.add('success');
+        btn.innerText = "¡ENVIADO!";
+
+        // Recarga automática después de mostrar el éxito
         setTimeout(() => {
-            alert("✅ Informe enviado con éxito.");
             location.reload();
-        }, 3500);
+        }, 3000);
 
     } catch (e) {
-        alert("Error al procesar.");
-        btn.disabled = false; load.style.display = 'none';
+        btn.disabled = false;
+        btn.innerText = "ERROR - REINTENTAR";
+        btn.classList.remove('processing');
+        console.error(e);
     }
 });
