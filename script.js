@@ -21,7 +21,7 @@ window.onpopstate = function() {
     location.reload();
 };
 
-// --- PROCESAMIENTO PDF ---
+// --- PDF ---
 document.getElementById('pdfInput').addEventListener('change', async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -54,7 +54,7 @@ window.cambiarPagina = function(delta) {
     }
 };
 
-// --- LÓGICA DE FIRMA ---
+// --- FIRMA ---
 let firmaImgData = null;
 const wrapper = document.getElementById('firma-wrapper');
 document.getElementById('firmaInput').addEventListener('change', (e) => {
@@ -99,7 +99,7 @@ wrapper.addEventListener('dblclick', () => {
     wrapper.classList.toggle('confirmada');
 });
 
-// --- ENVÍO FINAL ---
+// --- ENVÍO ---
 document.getElementById('btnEnviar').addEventListener('click', async () => {
     const n = document.getElementById('nombreProfesor').value;
     const btn = document.getElementById('btnEnviar');
