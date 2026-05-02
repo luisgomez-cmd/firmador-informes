@@ -2,12 +2,27 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Firmador IND - Sistema de Informes</title>
     <style>
-        * { user-select: none; -webkit-user-drag: none; } 
-        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; display: flex; height: 100vh; background: #333; overflow: hidden; }
+        /* Bloqueo de selección azul y arrastre nativo */
+        * { 
+            user-select: none; 
+            -webkit-user-drag: none; 
+            -webkit-tap-highlight-color: transparent;
+            box-sizing: border-box;
+        } 
         
-        /* PANTALLA DE INICIO */
+        body { 
+            font-family: 'Segoe UI', Arial, sans-serif; 
+            margin: 0; 
+            display: flex; 
+            height: 100vh; 
+            background: #333; 
+            overflow: hidden; 
+        }
+        
+        /* PANTALLA DE INICIO (SELECTOR) */
         #pantalla-inicio {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -18,87 +33,237 @@
             align-items: center;
             z-index: 2000;
             color: white;
-            transition: opacity 0.5s;
+            transition: opacity 0.5s ease;
         }
-        .selector-container { display: flex; gap: 20px; margin-top: 30px; }
+        
+        .selector-container { 
+            display: flex; 
+            gap: 20px; 
+            margin-top: 30px; 
+        }
+        
         .btn-area {
-            width: 200px; height: 150px;
-            background: white; color: #333;
-            border-radius: 15px; border: none;
-            font-size: 1.5rem; font-weight: bold;
-            cursor: pointer; transition: transform 0.2s, background 0.2s;
+            width: 220px; 
+            height: 160px;
+            background: white; 
+            color: #333;
+            border-radius: 15px; 
+            border: none;
+            font-size: 1.8rem; 
+            font-weight: bold;
+            cursor: pointer; 
+            transition: transform 0.2s, background 0.2s;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
+        
         .btn-area:hover { transform: scale(1.05); background: #ecf0f1; }
         #btn-cem { border-bottom: 8px solid #c62828; }
         #btn-dps { border-bottom: 8px solid #0277bd; }
 
-        /* INTERFAZ DEL FIRMADOR */
-        .sidebar { width: 300px; background: white; padding: 20px; z-index: 10; box-shadow: 2px 0 10px rgba(0,0,0,0.5); display: flex; flex-direction: column; }
-        .main { flex-grow: 1; overflow: auto; display: flex; flex-direction: column; align-items: center; padding: 20px; background: #525659; }
+        /* BARRA LATERAL */
+        .sidebar { 
+            width: 320px; 
+            background: white; 
+            padding: 20px; 
+            z-index: 10; 
+            box-shadow: 2px 0 10px rgba(0,0,0,0.5); 
+            display: flex; 
+            flex-direction: column; 
+        }
         
-        #canvas-container { position: relative; background: white; display: none; box-shadow: 0 0 30px rgba(0,0,0,0.5); margin-top: 10px; }
+        /* ÁREA PRINCIPAL DEL PDF */
+        .main { 
+            flex-grow: 1; 
+            overflow: auto; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            padding: 20px; 
+            background: #525659; 
+        }
+        
+        #canvas-container { 
+            position: relative; 
+            background: white; 
+            display: none; 
+            box-shadow: 0 0 30px rgba(0,0,0,0.5); 
+            margin-top: 10px; 
+        }
+        
         #pdf-render { display: block; pointer-events: none; }
         
+        /* LA FIRMA FLOTANTE */
         #firma-wrapper {
-            position: absolute; top: 50px; left: 50px; width: 150px; display: none; z-index: 999;
-            cursor: grab; border: 1px dashed #007bff; opacity: 0.4; transition: opacity 0.2s;
+            position: absolute; 
+            top: 50px; 
+            left: 50px; 
+            width: 150px; 
+            display: none; 
+            z-index: 999;
+            cursor: grab; 
+            border: 1px dashed #007bff; 
+            opacity: 0.4; 
+            transition: opacity 0.2s;
+            background: transparent;
         }
+        
+        #firma-wrapper:active { cursor: grabbing; }
         #firma-wrapper.confirmada { opacity: 1; border: 1px solid transparent; }
-        #firma-flotante { width: 100%; height: 100%; mix-blend-mode: multiply; pointer-events: none; }
-        .resizer { width: 12px; height: 12px; background: #007bff; position: absolute; right: -6px; bottom: -6px; cursor: nwse-resize; border-radius: 50%; }
+        
+        #firma-flotante { 
+            width: 100%; 
+            height: 100%; 
+            mix-blend-mode: multiply; 
+            pointer-events: none; 
+            display: block;
+        }
+        
+        .resizer { 
+            width: 14px; 
+            height: 14px; 
+            background: #007bff; 
+            position: absolute; 
+            right: -7px; 
+            bottom: -7px; 
+            cursor: nwse-resize; 
+            border-radius: 50%; 
+        }
 
-        .controls { background: white; padding: 8px 20px; margin-bottom: 10px; border-radius: 30px; display: none; gap: 15px; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .nav-btn { width: 50px; padding: 10px; border-radius: 5px; border: 1px solid #ccc; background: #f9f9f9; cursor: pointer; }
+        /* CONTROLES DE PÁGINA */
+        .controls { 
+            background: white; 
+            padding: 10px 25px; 
+            margin-bottom: 15px; 
+            border-radius: 30px; 
+            display: none; 
+            gap: 20px; 
+            align-items: center; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2); 
+        }
         
-        input { width: 100%; margin: 5px 0; padding: 10px; border-radius: 5px; border: 1px solid #ccc; outline: none; }
-        .btn-enviar { width: 100%; background: #2e7d32; color: white; border: none; padding: 15px; font-weight: bold; cursor: pointer; margin-top: auto; border-radius: 5px; }
-        .btn-enviar:disabled { background: #ccc; cursor: not-allowed; }
+        .nav-btn { 
+            width: 50px; 
+            padding: 10px; 
+            border-radius: 8px; 
+            border: 1px solid #ccc; 
+            background: #f9f9f9; 
+            cursor: pointer; 
+            font-weight: bold;
+        }
         
-        .badge-area { padding: 5px 10px; border-radius: 5px; font-weight: bold; margin-bottom: 10px; text-align: center; color: white; }
-        #loading-msg { font-size: 0.8rem; color: #2e7d32; display: none; margin-top: 5px; text-align: center; font-weight: bold;}
+        /* INPUTS Y BOTONES */
+        input[type="text"] { 
+            width: 100%; 
+            margin: 10px 0; 
+            padding: 12px; 
+            border-radius: 5px; 
+            border: 1px solid #ccc; 
+            outline: none; 
+        }
+        
+        input[type="file"] { 
+            margin-bottom: 15px; 
+            font-size: 0.8rem; 
+        }
+        
+        .btn-enviar { 
+            width: 100%; 
+            background: #2e7d32; 
+            color: white; 
+            border: none; 
+            padding: 18px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            margin-top: auto; 
+            border-radius: 8px; 
+            font-size: 1rem;
+        }
+        
+        .btn-enviar:disabled { background: #999; cursor: not-allowed; }
+        
+        .badge-area { 
+            padding: 10px; 
+            border-radius: 5px; 
+            font-weight: bold; 
+            margin-bottom: 15px; 
+            text-align: center; 
+            color: white; 
+            text-transform: uppercase;
+        }
+        
+        #loading-msg { 
+            font-size: 0.85rem; 
+            color: #d32f2f; 
+            display: none; 
+            margin-top: 10px; 
+            text-align: center; 
+            font-weight: bold;
+        }
+
+        h1 { font-size: 2rem; margin-bottom: 10px; }
+        h2 { font-size: 1.2rem; color: #c62828; margin-top: 0; }
+        label { font-size: 0.85rem; font-weight: bold; display: block; margin-bottom: 5px; }
     </style>
 </head>
 <body>
 
-<div id="pantalla-inicio">
-    <h1>SISTEMA DE INFORMES IND</h1>
-    <p>Selecciona tu área para continuar:</p>
-    <div class="selector-container">
-        <button class="btn-area" id="btn-cem" onclick="seleccionarArea('CEM')">CEM</button>
-        <button class="btn-area" id="btn-dps" onclick="seleccionarArea('DPS')">DPS</button>
-    </div>
-</div>
-
-<div class="sidebar">
-    <div id="area-label" class="badge-area"></div>
-    <input type="text" id="nombreProfesor" placeholder="Nombre y Apellido">
-    <label style="font-size: 0.8rem; font-weight: bold; margin-top: 10px;">1. Informe (PDF):</label>
-    <input type="file" id="pdfInput" accept=".pdf">
-    <label style="font-size: 0.8rem; font-weight: bold; margin-top: 10px;">2. Firma (Imagen):</label>
-    <input type="file" id="firmaInput" accept="image/*">
-    
-    <button id="btnEnviar" class="btn-enviar" style="display:none;">FIRMAR Y SUBIR A DRIVE</button>
-    <div id="loading-msg">Subiendo archivo... espera un momento</div>
-    <button onclick="location.reload()" style="background:none; border:none; color: #666; cursor:pointer; font-size: 0.7rem; margin-top: 10px;">← Volver a cambiar de área</button>
-</div>
-
-<div class="main">
-    <div id="controls" class="controls">
-        <button class="nav-btn" onclick="cambiarPagina(-1)">◀</button>
-        <span id="page-info" style="font-weight: bold; font-size: 0.9rem;">Página: 0 / 0</span>
-        <button class="nav-btn" onclick="cambiarPagina(1)">▶</button>
-    </div>
-    <div id="canvas-container">
-        <canvas id="pdf-render"></canvas>
-        <div id="firma-wrapper">
-            <img id="firma-flotante" src="" alt="firma">
-            <div class="resizer"></div>
+    <div id="pantalla-inicio">
+        <h1>SISTEMA DE INFORMES IND</h1>
+        <p>Selecciona tu área para comenzar:</p>
+        <div class="selector-container">
+            <button class="btn-area" id="btn-cem" onclick="window.seleccionarArea('CEM')">CEM</button>
+            <button class="btn-area" id="btn-dps" onclick="window.seleccionarArea('DPS')">DPS</button>
         </div>
     </div>
-</div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
-<script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
-<script src="script.js"></script>
+    <div class="sidebar">
+        <div id="area-label" class="badge-area">ÁREA NO SELECCIONADA</div>
+        
+        <label>Nombre del Profesor:</label>
+        <input type="text" id="nombreProfesor" placeholder="EJ: JUAN PEREZ">
+        
+        <label>1. Seleccionar Informe (PDF):</label>
+        <input type="file" id="pdfInput" accept=".pdf">
+        
+        <label>2. Seleccionar Firma (Imagen):</label>
+        <input type="file" id="firmaInput" accept="image/*">
+        
+        <div style="background: #f0f0f0; padding: 10px; border-radius: 5px; font-size: 0.75rem; color: #555; margin-bottom: 15px;">
+            <strong>Tips:</strong><br>
+            • Arrastra la firma al lugar correcto.<br>
+            • Haz <strong>doble clic</strong> sobre la firma para confirmarla (se pondrá sólida).<br>
+            • Usa el punto azul para ajustar el tamaño.
+        </div>
+        
+        <button id="btnEnviar" class="btn-enviar" style="display:none;">FIRMAR Y ENVIAR A DRIVE</button>
+        <div id="loading-msg">Procesando y subiendo... por favor espera.</div>
+        
+        <button onclick="location.reload()" style="background:none; border:none; color: #888; cursor:pointer; font-size: 0.7rem; margin-top: 15px; text-decoration: underline;">
+            ← Cambiar de área / Reiniciar
+        </button>
+    </div>
+
+    <div class="main">
+        <div id="controls" class="controls">
+            <button class="nav-btn" onclick="window.cambiarPagina(-1)">◀</button>
+            <span id="page-info" style="font-weight: bold; font-size: 1rem; color: #333;">Página: 0 / 0</span>
+            <button class="nav-btn" onclick="window.cambiarPagina(1)">▶</button>
+        </div>
+
+        <div id="canvas-container">
+            <canvas id="pdf-render"></canvas>
+            <div id="firma-wrapper">
+                <img id="firma-flotante" src="" alt="firma">
+                <div class="resizer"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
