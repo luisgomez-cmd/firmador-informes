@@ -51,11 +51,11 @@
         #btn-cem-card:hover { border-color: var(--cem-hover); box-shadow: 0 20px 40px rgba(120, 214, 75, 0.12); transform: translateY(-8px); }
         #btn-dps-card:hover { border-color: var(--dps-hover); box-shadow: 0 20px 40px rgba(255, 143, 29, 0.12); transform: translateY(-8px); }
 
-        /* --- ESTILOS DEL HISTORIAL --- */
+        /* --- HISTORIAL CORREGIDO (ALINEACIÓN FIJA) --- */
         #historial-container {
             margin-top: 60px;
-            width: 90%;
-            max-width: 800px;
+            width: 100%;
+            max-width: 800px; /* Misma suma que los logos + gap */
             display: none;
         }
         .historial-titulo {
@@ -67,11 +67,21 @@
             text-align: center;
             margin-bottom: 25px;
         }
-        #lista-historial {
+        
+        /* Contenedor de dos columnas fijas */
+        .historial-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 380px 380px; /* Mismo ancho que los logos */
+            gap: 40px; /* Mismo gap que los logos */
+            justify-content: center;
+        }
+
+        .col-historial {
+            display: flex;
+            flex-direction: column;
             gap: 15px;
         }
+
         .card-historial {
             background: #f8fafc;
             border: 1px solid #e2e8f0;
@@ -80,9 +90,8 @@
             display: flex;
             flex-direction: column;
             gap: 4px;
-            transition: 0.2s;
+            width: 100%;
         }
-        .card-historial:hover { border-color: #cbd5e1; }
         .card-historial .tag {
             font-size: 0.65rem;
             font-weight: 800;
@@ -199,7 +208,10 @@
 
         <div id="historial-container">
             <div class="historial-titulo">Envíos Recientes (Últimas 48h)</div>
-            <div id="lista-historial"></div>
+            <div class="historial-grid">
+                <div id="col-cem" class="col-historial"></div>
+                <div id="col-dps" class="col-historial"></div>
+            </div>
         </div>
     </div>
 
