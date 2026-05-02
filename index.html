@@ -25,6 +25,28 @@
             height: 100vh; background-color: #cfd4da; overflow: hidden;
         }
 
+        /* --- NOTIFICACIÓN PERSONALIZADA (Adiós a luisgomez-cmd...) --- */
+        #toast-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #1e293b;
+            color: white;
+            padding: 16px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            z-index: 10000;
+            transform: translateY(-100px);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        #toast-notification.show { transform: translateY(0); }
+        #toast-notification.error { border-left: 5px solid #ef4444; }
+
         /* --- PANTALLA DE INICIO --- */
         #pantalla-inicio {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -51,11 +73,10 @@
         #btn-cem-card:hover { border-color: var(--cem-hover); box-shadow: 0 20px 40px rgba(120, 214, 75, 0.12); transform: translateY(-8px); }
         #btn-dps-card:hover { border-color: var(--dps-hover); box-shadow: 0 20px 40px rgba(255, 143, 29, 0.12); transform: translateY(-8px); }
 
-        /* --- HISTORIAL CORREGIDO (ALINEACIÓN FIJA) --- */
         #historial-container {
             margin-top: 60px;
             width: 100%;
-            max-width: 800px; /* Misma suma que los logos + gap */
+            max-width: 800px;
             display: none;
         }
         .historial-titulo {
@@ -68,11 +89,10 @@
             margin-bottom: 25px;
         }
         
-        /* Contenedor de dos columnas fijas */
         .historial-grid {
             display: grid;
-            grid-template-columns: 380px 380px; /* Mismo ancho que los logos */
-            gap: 40px; /* Mismo gap que los logos */
+            grid-template-columns: 380px 380px;
+            gap: 40px;
             justify-content: center;
         }
 
@@ -194,6 +214,8 @@
     </style>
 </head>
 <body>
+
+    <div id="toast-notification"></div>
 
     <div id="pantalla-inicio">
         <div class="header-intro"><h1>Plataforma de Firmas SIGI</h1></div>
