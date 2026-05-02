@@ -8,6 +8,12 @@ const URLS_SCRIPT = {
     'DPS': 'https://script.google.com/macros/s/AKfycbwYallAI9iyq8ODWsoVcPVkI_NnMQIvX7Ij3r6CDX7DBSfzDqZNp0Yw39R3urD5JXeZ/exec'
 };
 
+// --- INICIALIZACIÓN ---
+window.onload = function() {
+    renderizarHistorial();
+};
+
+// --- NAVEGACIÓN ---
 window.seleccionarArea = function(area) {
     areaSeleccionada = area;
     document.getElementById('logo-sidebar').src = `logo_${area.toLowerCase()}.png`;
@@ -20,6 +26,44 @@ window.onpopstate = function() {
     location.reload();
 };
 
+// --- HISTORIAL (LOCALSTORAGE) ---
+function guardarEnHistorial(area, nombreArchivo) {
+    const registro = {
+        area: area,
+        nombreArchivo: nombreArchivo,
+        fecha: new Date().getTime()
+    };
+    let historial = JSON.parse(localStorage.getItem('historial_sigi') || '[]');
+    historial.push(registro);
+    localStorage.setItem('historial_sigi', JSON.stringify(historial));
+}
+
+function renderizarHistorial() {
+    const contenedor = document.getElementById('historial-container');
+    const lista = document.getElementById('lista-historial');
+    const ahora = new Date().getTime();
+    const DOS_DIAS = 2 * 24 * 60 * 60 * 1000;
+
+    let historial = JSON.parse(localStorage.getItem('historial_sigi') || '[]');
+    
+    // Filtro: solo lo de las últimas 48 horas
+    historial = historial.filter(item => (ahora - item.fecha) < DOS_DIAS);
+    localStorage.setItem('historial_sigi', JSON.stringify(historial));
+
+    if (historial.length > 0) {
+        contenedor.style.display = 'block';
+        // Mostramos los más recientes primero (reverse)
+        lista.innerHTML = historial.reverse().map(item => `
+            <div class="card-historial">
+                <span class="tag tag-${item.area.toLowerCase()}">${item.area}</span>
+                <span class="file-name" title="${item.nombreArchivo}">${item.nombreArchivo}</span>
+                <span class="date">${new Date(item.fecha).toLocaleString('es-CL', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</span>
+            </div>
+        `).join('');
+    }
+}
+
+// --- PDF ---
 document.getElementById('pdfInput').addEventListener('change', async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -52,6 +96,7 @@ window.cambiarPagina = function(delta) {
     }
 };
 
+// --- FIRMA ---
 let firmaImgData = null;
 const wrapper = document.getElementById('firma-wrapper');
 document.getElementById('firmaInput').addEventListener('change', (e) => {
@@ -96,6 +141,7 @@ wrapper.addEventListener('dblclick', () => {
     wrapper.classList.toggle('confirmada');
 });
 
+// --- ENVÍO FINAL ---
 document.getElementById('btnEnviar').addEventListener('click', async () => {
     const n = document.getElementById('nombreProfesor').value;
     const btn = document.getElementById('btnEnviar');
@@ -130,12 +176,16 @@ document.getElementById('btnEnviar').addEventListener('click', async () => {
         const pdfBase64 = await pdfLibDoc.saveAsBase64();
         const limpio = n.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().trim().replace(/\s+/g, '_');
         const codigo = nombreOriginal.split('_')[0];
+        const nombreFinal = `${limpio}_${codigo}.pdf`;
         
         await fetch(URLS_SCRIPT[areaSeleccionada], {
             method: 'POST',
-            body: JSON.stringify({ base64: pdfBase64, filename: `${limpio}_${codigo}.pdf` }),
+            body: JSON.stringify({ base64: pdfBase64, filename: nombreFinal }),
             mode: 'no-cors'
         });
+
+        // Guardar en historial antes de recargar
+        guardarEnHistorial(areaSeleccionada, nombreFinal);
 
         btn.classList.remove('processing');
         btn.classList.add('success');
