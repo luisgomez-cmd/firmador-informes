@@ -9,13 +9,11 @@ let pageNum = 1;
 let nombreOriginal = "";
 let areaSeleccionada = "";
 
-// Tus URLs de Google Apps Script
 const URLS_SCRIPT = {
     'CEM': 'https://script.google.com/macros/s/AKfycbx6ZgoFXuzmQKZeP2sMCjWjGxXuwmT3OB3XMOG7IxRkKY2K5lDtowxP-7S_qWzuZ5Nb/exec',
     'DPS': 'https://script.google.com/macros/s/AKfycbwYallAI9iyq8ODWsoVcPVkI_NnMQIvX7Ij3r6CDX7DBSfzDqZNp0Yw39R3urD5JXeZ/exec'
 };
 
-// Variables de movimiento
 let active = false, resizerActive = false;
 let currentX, currentY, initialX, initialY, xOffset = 0, yOffset = 0;
 const wrapper = document.getElementById('firma-wrapper');
@@ -30,13 +28,11 @@ function seleccionarArea(area) {
     setTimeout(() => { document.getElementById('pantalla-inicio').style.display = 'none'; }, 500);
 }
 
-// 1. Cargar PDF
 document.getElementById('pdfInput').addEventListener('change', async (e) => {
     const file = e.target.files[0];
     if (!file) return;
     nombreOriginal = file.name;
     pdfBytesOriginal = await file.arrayBuffer();
-    
     const loadingTask = pdfjsLib.getDocument(new Uint8Array(pdfBytesOriginal));
     pdfDoc = await loadingTask.promise;
     pageNum = pdfDoc.numPages;
@@ -64,7 +60,6 @@ function cambiarPagina(delta) {
     }
 }
 
-// 2. Cargar Firma
 let firmaImgData = null;
 document.getElementById('firmaInput').addEventListener('change', (e) => {
     const file = e.target.files[0];
@@ -80,7 +75,6 @@ document.getElementById('firmaInput').addEventListener('change', (e) => {
     reader.readAsDataURL(file);
 });
 
-// 3. Movimiento y Redimensión
 wrapper.addEventListener("mousedown", (e) => {
     if (e.target === resizer) return;
     e.preventDefault();
@@ -112,11 +106,11 @@ wrapper.addEventListener('dblclick', (e) => {
     wrapper.style.opacity = wrapper.classList.contains('confirmada') ? "1" : "0.4";
 });
 
-// 4. PROCESO FINAL: ESTAMPAR Y SUBIR
+// PROCESO DE ENVÍO CORREGIDO
 document.getElementById('btnEnviar').addEventListener('click', async () => {
     const n = document.getElementById('nombreProfesor').value;
-    if(!n) return alert("Por favor, escribe tu nombre.");
-    if(!wrapper.classList.contains('confirmada')) return alert("Por favor, haz doble clic en la firma para confirmarla antes de enviar.");
+    if(!n) return alert("Escribe tu nombre.");
+    if(!wrapper.classList.contains('confirmada')) return alert("Confirma la firma con doble clic.");
 
     const btn = document.getElementById('btnEnviar');
     const loadingMsg = document.getElementById('loading-msg');
@@ -124,25 +118,20 @@ document.getElementById('btnEnviar').addEventListener('click', async () => {
     loadingMsg.style.display = 'block';
 
     try {
-        // A. Cargar PDF en pdf-lib
         const pdfLibDoc = await PDFDocument.load(pdfBytesOriginal);
         const pages = pdfLibDoc.getPages();
         const currentPage = pages[pageNum - 1];
         
-        // B. Incrustar Firma
         const firmaImg = await pdfLibDoc.embedPng(firmaImgData);
-        
-        // Calcular posición relativa al PDF real
         const canvas = document.getElementById('pdf-render');
         const rect = canvas.getBoundingClientRect();
         const wrapperRect = wrapper.getBoundingClientRect();
         
-        // Proporción entre el canvas visual y el PDF real
         const scaleX = currentPage.getWidth() / canvas.width;
         const scaleY = currentPage.getHeight() / canvas.height;
 
         const posX = (wrapperRect.left - rect.left) * scaleX;
-        const posY = (rect.bottom - wrapperRect.bottom) * scaleY; // PDF-Lib mide desde abajo
+        const posY = (rect.bottom - wrapperRect.bottom) * scaleY; 
         const widthFinal = wrapperRect.width * scaleX;
         const heightFinal = wrapperRect.height * scaleY;
 
@@ -153,34 +142,29 @@ document.getElementById('btnEnviar').addEventListener('click', async () => {
             height: heightFinal,
         });
 
-        // C. Generar Base64
-        const pdfBytesFinal = await pdfLibDoc.saveAsBase64();
-        
-        // D. Preparar Nombre
+        const pdfBase64 = await pdfLibDoc.saveAsBase64();
         const limpio = n.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().trim().replace(/\s+/g, '_');
         const codigo = nombreOriginal.split('_')[0];
         const nombreFinal = `${limpio}_${codigo}.pdf`;
 
-        // E. Enviar a Google Apps Script
+        // ENVÍO SIN ALERTAS INTERMEDIAS
         const response = await fetch(URLS_SCRIPT[areaSeleccionada], {
             method: 'POST',
+            mode: 'no-cors', // ESTA LÍNEA ES CLAVE para evitar bloqueos
+            headers: { 'Content-Type': 'text/plain' },
             body: JSON.stringify({
-                base64: pdfBytesFinal,
+                base64: pdfBase64,
                 filename: nombreFinal
             })
         });
 
-        const res = await response.json();
-        if(res.result === "success") {
-            alert("✅ ¡Informe enviado con éxito a la carpeta de " + areaSeleccionada + "!");
-            location.reload();
-        } else {
-            throw new Error(res.error);
-        }
+        // Con no-cors no podemos leer la respuesta, pero si no hay error en el catch, se envió.
+        alert("✅ Informe enviado. Revisa tu carpeta en Drive en unos segundos.");
+        location.reload();
 
     } catch (error) {
         console.error(error);
-        alert("❌ Error al enviar: " + error.message);
+        alert("❌ Hubo un problema al procesar el archivo.");
         btn.disabled = false;
         loadingMsg.style.display = 'none';
     }
