@@ -148,7 +148,6 @@ document.getElementById('btnEnviar').addEventListener('click', async () => {
         btn.classList.add('success');
         btn.innerText = "¡ENVIADO!";
 
-        // Recarga automática después de mostrar el éxito
         setTimeout(() => {
             location.reload();
         }, 3000);
