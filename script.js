@@ -1,39 +1,25 @@
 const pdfjsLib = window['pdfjs-dist/build/pdf'];
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
-
 const { PDFDocument } = PDFLib;
 
-let pdfDocActual = null;
-let pdfBytesOriginal = null;
-let pageNum = 1;
-let nombreOriginal = "";
-let areaSeleccionada = "";
-
+let pdfDocActual = null, pdfBytesOriginal = null, pageNum = 1, nombreOriginal = "", areaSeleccionada = "";
 const URLS_SCRIPT = {
     'CEM': 'https://script.google.com/macros/s/AKfycbx6ZgoFXuzmQKZeP2sMCjWjGxXuwmT3OB3XMOG7IxRkKY2K5lDtowxP-7S_qWzuZ5Nb/exec',
     'DPS': 'https://script.google.com/macros/s/AKfycbwYallAI9iyq8ODWsoVcPVkI_NnMQIvX7Ij3r6CDX7DBSfzDqZNp0Yw39R3urD5JXeZ/exec'
 };
 
-// --- FUNCIÓN DE INICIO (FORZADA GLOBAL) ---
+// --- INICIO ---
 window.seleccionarArea = function(area) {
-    console.log("Área seleccionada:", area);
     areaSeleccionada = area;
-    const label = document.getElementById('area-label');
-    label.innerText = "ÁREA: " + area;
-    label.style.background = (area === 'CEM') ? '#c62828' : '#0277bd';
-    
+    document.getElementById('logo-sidebar').src = `https://raw.githubusercontent.com/luisgomez-cmd/firmador-informes/main/logo_${area.toLowerCase()}.png`;
     document.getElementById('pantalla-inicio').style.opacity = '0';
-    setTimeout(() => { 
-        document.getElementById('pantalla-inicio').style.display = 'none'; 
+    setTimeout(() => {
+        document.getElementById('pantalla-inicio').style.display = 'none';
+        document.getElementById('app-main').style.display = 'flex';
     }, 500);
 };
 
-// --- TODO EL RESTO DE LA LÓGICA ---
-let active = false, resizerActive = false;
-let currentX, currentY, initialX, initialY, xOffset = 0, yOffset = 0;
-const wrapper = document.getElementById('firma-wrapper');
-const resizer = document.querySelector('.resizer');
-
+// --- PDF LOGIC ---
 document.getElementById('pdfInput').addEventListener('change', async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -44,7 +30,7 @@ document.getElementById('pdfInput').addEventListener('change', async (e) => {
     pageNum = pdfDocActual.numPages;
     renderPage(pageNum);
     document.getElementById('canvas-container').style.display = 'block';
-    document.getElementById('controls').style.display = 'flex';
+    document.getElementById('viewer-nav').style.display = 'flex';
 });
 
 async function renderPage(num) {
@@ -55,7 +41,7 @@ async function renderPage(num) {
     canvas.height = viewport.height;
     canvas.width = viewport.width;
     await page.render({ canvasContext: ctx, viewport: viewport }).promise;
-    document.getElementById('page-info').innerText = `Página: ${num} / ${pdfDocActual.numPages}`;
+    document.getElementById('page-info').innerText = `PÁGINA ${num} / ${pdfDocActual.numPages}`;
 }
 
 window.cambiarPagina = function(delta) {
@@ -66,38 +52,36 @@ window.cambiarPagina = function(delta) {
     }
 };
 
+// --- FIRMA LOGIC ---
 let firmaImgData = null;
+const wrapper = document.getElementById('firma-wrapper');
 document.getElementById('firmaInput').addEventListener('change', (e) => {
     const file = e.target.files[0];
     const reader = new FileReader();
     reader.onload = (event) => {
         firmaImgData = event.target.result;
-        document.getElementById('firma-flotante').src = firmaImgData;
+        document.getElementById('firma-img').src = firmaImgData;
         wrapper.style.display = 'block';
         wrapper.classList.remove('confirmada');
-        wrapper.style.opacity = "0.4";
         document.getElementById('btnEnviar').style.display = 'block';
     };
     reader.readAsDataURL(file);
 });
 
+// MOVIMIENTO
+let active = false, resizerActive = false, currentX, currentY, initialX, initialY, xOffset = 0, yOffset = 0;
 wrapper.addEventListener("mousedown", (e) => {
-    if (e.target === resizer) return;
-    e.preventDefault();
-    initialX = e.clientX - xOffset;
-    initialY = e.clientY - yOffset;
+    if (e.target.classList.contains('resizer-dot')) return;
+    initialX = e.clientX - xOffset; initialY = e.clientY - yOffset;
     active = true;
 });
-resizer.addEventListener("mousedown", (e) => {
-    resizerActive = true;
-    e.stopPropagation(); e.preventDefault();
+document.querySelector('.resizer-dot').addEventListener("mousedown", (e) => {
+    resizerActive = true; e.stopPropagation();
 });
 document.addEventListener("mouseup", () => { active = false; resizerActive = false; });
 document.addEventListener("mousemove", (e) => {
     if (active) {
-        e.preventDefault();
-        currentX = e.clientX - initialX;
-        currentY = e.clientY - initialY;
+        currentX = e.clientX - initialX; currentY = e.clientY - initialY;
         xOffset = currentX; yOffset = currentY;
         wrapper.style.transform = `translate3d(${currentX}px, ${currentY}px, 0)`;
     } else if (resizerActive) {
@@ -106,67 +90,57 @@ document.addEventListener("mousemove", (e) => {
         if (newWidth > 40) wrapper.style.width = newWidth + "px";
     }
 });
-wrapper.addEventListener('dblclick', (e) => {
-    e.preventDefault();
+wrapper.addEventListener('dblclick', () => {
     wrapper.classList.toggle('confirmada');
-    wrapper.style.opacity = wrapper.classList.contains('confirmada') ? "1" : "0.4";
 });
 
+// --- ENVÍO FINAL ---
 document.getElementById('btnEnviar').addEventListener('click', async () => {
     const n = document.getElementById('nombreProfesor').value;
     if(!n) return alert("Escribe tu nombre.");
-    if(!wrapper.classList.contains('confirmada')) return alert("Confirma la firma con doble clic.");
+    if(!wrapper.classList.contains('confirmada')) return alert("Fija la firma con doble clic.");
 
     const btn = document.getElementById('btnEnviar');
-    const loadingMsg = document.getElementById('loading-msg');
-    btn.disabled = true;
-    loadingMsg.style.display = 'block';
+    const load = document.getElementById('loading-msg');
+    btn.disabled = true; load.style.display = 'block';
 
     try {
         const pdfLibDoc = await PDFDocument.load(pdfBytesOriginal);
         const pages = pdfLibDoc.getPages();
         const currentPage = pages[pageNum - 1];
-        
         const firmaImg = await pdfLibDoc.embedPng(firmaImgData);
+        
         const canvas = document.getElementById('pdf-render');
         const rect = canvas.getBoundingClientRect();
-        const wrapperRect = wrapper.getBoundingClientRect();
+        const wrapRect = wrapper.getBoundingClientRect();
         
         const scaleX = currentPage.getWidth() / canvas.width;
         const scaleY = currentPage.getHeight() / canvas.height;
 
-        const posX = (wrapperRect.left - rect.left) * scaleX;
-        const posY = (rect.bottom - wrapperRect.bottom) * scaleY; 
-        const widthFinal = wrapperRect.width * scaleX;
-        const heightFinal = wrapperRect.height * scaleY;
-
         currentPage.drawImage(firmaImg, {
-            x: posX,
-            y: posY,
-            width: widthFinal,
-            height: heightFinal,
+            x: (wrapRect.left - rect.left) * scaleX,
+            y: (rect.bottom - wrapRect.bottom) * scaleY,
+            width: wrapRect.width * scaleX,
+            height: wrapRect.height * scaleY,
         });
 
         const pdfBase64 = await pdfLibDoc.saveAsBase64();
         const limpio = n.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().trim().replace(/\s+/g, '_');
         const codigo = nombreOriginal.split('_')[0];
-        const nombreFinal = `${limpio}_${codigo}.pdf`;
-
+        
         fetch(URLS_SCRIPT[areaSeleccionada], {
             method: 'POST',
-            body: JSON.stringify({ base64: pdfBase64, filename: nombreFinal }),
+            body: JSON.stringify({ base64: pdfBase64, filename: `${limpio}_${codigo}.pdf` }),
             mode: 'no-cors'
         });
 
         setTimeout(() => {
-            alert("✅ ¡Informe enviado! El archivo aparecerá en el Drive en unos instantes.");
+            alert("✅ Informe enviado con éxito.");
             location.reload();
         }, 3500);
 
-    } catch (error) {
-        console.error(error);
-        alert("❌ Error: " + error.message);
-        btn.disabled = false;
-        loadingMsg.style.display = 'none';
+    } catch (e) {
+        alert("Error al procesar.");
+        btn.disabled = false; load.style.display = 'none';
     }
 });
