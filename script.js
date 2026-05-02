@@ -3,7 +3,7 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs
 
 const { PDFDocument } = PDFLib;
 
-let pdfDoc = null;
+let pdfDocActual = null;
 let pdfBytesOriginal = null;
 let pageNum = 1;
 let nombreOriginal = "";
@@ -14,13 +14,9 @@ const URLS_SCRIPT = {
     'DPS': 'https://script.google.com/macros/s/AKfycbwYallAI9iyq8ODWsoVcPVkI_NnMQIvX7Ij3r6CDX7DBSfzDqZNp0Yw39R3urD5JXeZ/exec'
 };
 
-let active = false, resizerActive = false;
-let currentX, currentY, initialX, initialY, xOffset = 0, yOffset = 0;
-const wrapper = document.getElementById('firma-wrapper');
-const resizer = document.querySelector('.resizer');
-
-// FUNCIÓN PARA ENTRAR AL SISTEMA (La que estaba fallando)
-function seleccionarArea(area) {
+// --- FUNCIÓN DE INICIO (FORZADA GLOBAL) ---
+window.seleccionarArea = function(area) {
+    console.log("Área seleccionada:", area);
     areaSeleccionada = area;
     const label = document.getElementById('area-label');
     label.innerText = "ÁREA: " + area;
@@ -30,42 +26,46 @@ function seleccionarArea(area) {
     setTimeout(() => { 
         document.getElementById('pantalla-inicio').style.display = 'none'; 
     }, 500);
-}
+};
 
-// 1. Cargar PDF
+// --- TODO EL RESTO DE LA LÓGICA ---
+let active = false, resizerActive = false;
+let currentX, currentY, initialX, initialY, xOffset = 0, yOffset = 0;
+const wrapper = document.getElementById('firma-wrapper');
+const resizer = document.querySelector('.resizer');
+
 document.getElementById('pdfInput').addEventListener('change', async (e) => {
     const file = e.target.files[0];
     if (!file) return;
     nombreOriginal = file.name;
     pdfBytesOriginal = await file.arrayBuffer();
     const loadingTask = pdfjsLib.getDocument(new Uint8Array(pdfBytesOriginal.slice(0)));
-    pdfDoc = await loadingTask.promise;
-    pageNum = pdfDoc.numPages;
+    pdfDocActual = await loadingTask.promise;
+    pageNum = pdfDocActual.numPages;
     renderPage(pageNum);
     document.getElementById('canvas-container').style.display = 'block';
     document.getElementById('controls').style.display = 'flex';
 });
 
 async function renderPage(num) {
-    const page = await pdfDoc.getPage(num);
+    const page = await pdfDocActual.getPage(num);
     const canvas = document.getElementById('pdf-render');
     const ctx = canvas.getContext('2d');
     const viewport = page.getViewport({ scale: 1.3 });
     canvas.height = viewport.height;
     canvas.width = viewport.width;
     await page.render({ canvasContext: ctx, viewport: viewport }).promise;
-    document.getElementById('page-info').innerText = `Página: ${num} / ${pdfDoc.numPages}`;
+    document.getElementById('page-info').innerText = `Página: ${num} / ${pdfDocActual.numPages}`;
 }
 
-function cambiarPagina(delta) {
-    if (!pdfDoc) return;
-    if (pageNum + delta > 0 && pageNum + delta <= pdfDoc.numPages) {
+window.cambiarPagina = function(delta) {
+    if (!pdfDocActual) return;
+    if (pageNum + delta > 0 && pageNum + delta <= pdfDocActual.numPages) {
         pageNum += delta;
         renderPage(pageNum);
     }
-}
+};
 
-// 2. Cargar Firma
 let firmaImgData = null;
 document.getElementById('firmaInput').addEventListener('change', (e) => {
     const file = e.target.files[0];
@@ -81,7 +81,6 @@ document.getElementById('firmaInput').addEventListener('change', (e) => {
     reader.readAsDataURL(file);
 });
 
-// 3. Movimiento y Redimensión
 wrapper.addEventListener("mousedown", (e) => {
     if (e.target === resizer) return;
     e.preventDefault();
@@ -113,7 +112,6 @@ wrapper.addEventListener('dblclick', (e) => {
     wrapper.style.opacity = wrapper.classList.contains('confirmada') ? "1" : "0.4";
 });
 
-// 4. ENVÍO A GOOGLE DRIVE
 document.getElementById('btnEnviar').addEventListener('click', async () => {
     const n = document.getElementById('nombreProfesor').value;
     if(!n) return alert("Escribe tu nombre.");
@@ -154,7 +152,6 @@ document.getElementById('btnEnviar').addEventListener('click', async () => {
         const codigo = nombreOriginal.split('_')[0];
         const nombreFinal = `${limpio}_${codigo}.pdf`;
 
-        // Envío ciego (no-cors)
         fetch(URLS_SCRIPT[areaSeleccionada], {
             method: 'POST',
             body: JSON.stringify({ base64: pdfBase64, filename: nombreFinal }),
@@ -162,7 +159,7 @@ document.getElementById('btnEnviar').addEventListener('click', async () => {
         });
 
         setTimeout(() => {
-            alert("✅ ¡Informe enviado! Revisa tu carpeta en Drive en unos segundos.");
+            alert("✅ ¡Informe enviado! El archivo aparecerá en el Drive en unos instantes.");
             location.reload();
         }, 3500);
 
