@@ -4,14 +4,27 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs
 let pdfDoc = null;
 let pageNum = 1;
 let nombreOriginal = "";
+let areaSeleccionada = ""; // CEM o DPS
 
-let active = false;
-let resizerActive = false;
-let currentX, currentY, initialX, initialY;
-let xOffset = 0, yOffset = 0;
-
+// Variables de movimiento
+let active = false, resizerActive = false;
+let currentX, currentY, initialX, initialY, xOffset = 0, yOffset = 0;
 const wrapper = document.getElementById('firma-wrapper');
 const resizer = document.querySelector('.resizer');
+
+// Función de Inicio
+function seleccionarArea(area) {
+    areaSeleccionada = area;
+    const label = document.getElementById('area-label');
+    label.innerText = "ÁREA: " + area;
+    label.style.background = (area === 'CEM') ? '#c62828' : '#0277bd';
+    
+    // Ocultar pantalla inicio con efecto
+    document.getElementById('pantalla-inicio').style.opacity = '0';
+    setTimeout(() => {
+        document.getElementById('pantalla-inicio').style.display = 'none';
+    }, 500);
+}
 
 // 1. Cargar PDF
 document.getElementById('pdfInput').addEventListener('change', async (e) => {
@@ -52,72 +65,56 @@ function cambiarPagina(delta) {
 // 2. Cargar Firma
 document.getElementById('firmaInput').addEventListener('change', (e) => {
     const file = e.target.files[0];
-    if(!file) return;
     const reader = new FileReader();
     reader.onload = (event) => {
-        const img = document.getElementById('firma-flotante');
-        img.src = event.target.result;
+        document.getElementById('firma-flotante').src = event.target.result;
         wrapper.style.display = 'block';
         wrapper.classList.remove('confirmada');
         wrapper.style.opacity = "0.4";
-        document.getElementById('btnGenerar').style.display = 'block';
+        document.getElementById('btnEnviar').style.display = 'block';
     };
     reader.readAsDataURL(file);
 });
 
-// 3. Movimiento (Drag) - Bloqueo de selección nativa
+// 3. Movimiento y Redimensión (Mantenemos tu lógica que funciona)
 wrapper.addEventListener("mousedown", (e) => {
     if (e.target === resizer) return;
-    e.preventDefault(); // Bloquea selección azul
+    e.preventDefault();
     initialX = e.clientX - xOffset;
     initialY = e.clientY - yOffset;
     active = true;
 });
-
 resizer.addEventListener("mousedown", (e) => {
     resizerActive = true;
-    e.stopPropagation();
-    e.preventDefault();
+    e.stopPropagation(); e.preventDefault();
 });
-
-document.addEventListener("mouseup", () => {
-    active = false;
-    resizerActive = false;
-});
-
+document.addEventListener("mouseup", () => { active = false; resizerActive = false; });
 document.addEventListener("mousemove", (e) => {
     if (active) {
         e.preventDefault();
         currentX = e.clientX - initialX;
         currentY = e.clientY - initialY;
-        xOffset = currentX;
-        yOffset = currentY;
+        xOffset = currentX; yOffset = currentY;
         wrapper.style.transform = `translate3d(${currentX}px, ${currentY}px, 0)`;
     } else if (resizerActive) {
         const rect = wrapper.getBoundingClientRect();
         const newWidth = e.clientX - rect.left;
-        if (newWidth > 40) {
-            wrapper.style.width = newWidth + "px";
-        }
+        if (newWidth > 40) wrapper.style.width = newWidth + "px";
     }
 });
-
-// 4. Doble clic para Confirmar
 wrapper.addEventListener('dblclick', (e) => {
     e.preventDefault();
     wrapper.classList.toggle('confirmada');
-    if (wrapper.classList.contains('confirmada')) {
-        wrapper.style.opacity = "1";
-    } else {
-        wrapper.style.opacity = "0.4";
-    }
+    wrapper.style.opacity = wrapper.classList.contains('confirmada') ? "1" : "0.4";
 });
 
-// 5. Nombre Final
-document.getElementById('btnGenerar').addEventListener('click', () => {
+// 4. Botón de Envío (A configurar con Google Drive)
+document.getElementById('btnEnviar').addEventListener('click', () => {
     const n = document.getElementById('nombreProfesor').value;
     if(!n) return alert("Escribe tu nombre");
     const limpio = n.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().trim().replace(/\s+/g, '_');
     const codigo = nombreOriginal.split('_')[0];
-    alert(`Generando: ${limpio}_${codigo}.pdf`);
+    const nombreFinal = `${limpio}_${codigo}.pdf`;
+    
+    alert(`Enviando informe de ${areaSeleccionada}...\nNombre: ${nombreFinal}`);
 });
