@@ -8,6 +8,19 @@ const URLS_SCRIPT = {
     'DPS': 'https://script.google.com/macros/s/AKfycbwYallAI9iyq8ODWsoVcPVkI_NnMQIvX7Ij3r6CDX7DBSfzDqZNp0Yw39R3urD5JXeZ/exec'
 };
 
+// --- FUNCIÓN PARA MOSTRAR MENSAJES ELEGANTES (Adiós Alertas feos) ---
+function mostrarToast(mensaje, esError = false) {
+    const toast = document.getElementById('toast-notification');
+    toast.innerText = mensaje;
+    toast.classList.remove('error');
+    if(esError) toast.classList.add('error');
+    
+    toast.classList.add('show');
+    setTimeout(() => {
+        toast.classList.remove('show');
+    }, 4000);
+}
+
 // --- INICIALIZACIÓN ---
 window.onload = function() {
     renderizarHistorial();
@@ -26,7 +39,7 @@ window.onpopstate = function() {
     location.reload();
 };
 
-// --- HISTORIAL CON ALINEACIÓN FIJA ---
+// --- HISTORIAL ---
 function guardarEnHistorial(area, nombreArchivo) {
     const registro = {
         area: area,
@@ -46,24 +59,16 @@ function renderizarHistorial() {
     const DOS_DIAS = 2 * 24 * 60 * 60 * 1000;
 
     let historial = JSON.parse(localStorage.getItem('historial_sigi') || '[]');
-    
-    // Filtro 48h
     historial = historial.filter(item => (ahora - item.fecha) < DOS_DIAS);
     localStorage.setItem('historial_sigi', JSON.stringify(historial));
 
     if (historial.length > 0) {
         contenedor.style.display = 'block';
-        
-        // Limpiar columnas
-        colCem.innerHTML = "";
-        colDps.innerHTML = "";
-
-        // Ordenar por fecha (más reciente arriba)
+        colCem.innerHTML = ""; colDps.innerHTML = "";
         historial.sort((a, b) => b.fecha - a.fecha);
 
         historial.forEach(item => {
             const fechaObj = new Date(item.fecha);
-            // Formatear fecha con 0 inicial (02/05)
             const dia = String(fechaObj.getDate()).padStart(2, '0');
             const mes = String(fechaObj.getMonth() + 1).padStart(2, '0');
             const hora = String(fechaObj.getHours()).padStart(2, '0');
@@ -77,7 +82,6 @@ function renderizarHistorial() {
                     <span class="date">${fechaFormateada}</span>
                 </div>
             `;
-
             if (item.area === 'CEM') colCem.innerHTML += cardHtml;
             else if (item.area === 'DPS') colDps.innerHTML += cardHtml;
         });
@@ -162,13 +166,13 @@ wrapper.addEventListener('dblclick', () => {
     wrapper.classList.toggle('confirmada');
 });
 
-// --- ENVÍO ---
+// --- ENVÍO FINAL ---
 document.getElementById('btnEnviar').addEventListener('click', async () => {
     const n = document.getElementById('nombreProfesor').value;
     const btn = document.getElementById('btnEnviar');
     
-    if(!n) return alert("Escribe tu nombre.");
-    if(!wrapper.classList.contains('confirmada')) return alert("Fija la firma con doble clic.");
+    if(!n) return mostrarToast("Por favor, escribe tu nombre.", true);
+    if(!wrapper.classList.contains('confirmada')) return mostrarToast("Debes fijar la firma con doble clic.", true);
 
     btn.disabled = true;
     btn.innerText = "PROCESANDO...";
@@ -219,6 +223,6 @@ document.getElementById('btnEnviar').addEventListener('click', async () => {
         btn.disabled = false;
         btn.innerText = "ERROR - REINTENTAR";
         btn.classList.remove('processing');
-        console.error(e);
+        mostrarToast("Hubo un error al enviar. Reintenta.", true);
     }
 });
