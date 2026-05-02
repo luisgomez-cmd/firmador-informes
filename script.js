@@ -8,19 +8,26 @@ const URLS_SCRIPT = {
     'DPS': 'https://script.google.com/macros/s/AKfycbwYallAI9iyq8ODWsoVcPVkI_NnMQIvX7Ij3r6CDX7DBSfzDqZNp0Yw39R3urD5JXeZ/exec'
 };
 
-// --- INICIO Y SELECCIÓN DE ÁREA ---
+// --- CONTROL DE NAVEGACIÓN "ATRÁS" ---
 window.seleccionarArea = function(area) {
     areaSeleccionada = area;
-    // Carga el logo correspondiente en el sidebar
     document.getElementById('logo-sidebar').src = `logo_${area.toLowerCase()}.png`;
-    document.getElementById('pantalla-inicio').style.opacity = '0';
-    setTimeout(() => {
-        document.getElementById('pantalla-inicio').style.display = 'none';
-        document.getElementById('app-main').style.display = 'flex';
-    }, 500);
+    
+    // Cambiamos visualmente
+    document.getElementById('pantalla-inicio').style.display = 'none';
+    document.getElementById('app-main').style.display = 'flex';
+    
+    // Guardamos un estado en el historial para poder volver atrás
+    history.pushState({view: 'app'}, '');
 };
 
-// --- LÓGICA DE CARGA DE PDF ---
+// Si el usuario presiona "atrás" en el navegador
+window.onpopstate = function(event) {
+    // Si vuelve al estado inicial (sin datos en el event.state), recargamos para ir al inicio
+    location.reload();
+};
+
+// --- LÓGICA DE PDF ---
 document.getElementById('pdfInput').addEventListener('change', async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -53,10 +60,9 @@ window.cambiarPagina = function(delta) {
     }
 };
 
-// --- LÓGICA DE LA FIRMA ---
+// --- LÓGICA DE FIRMA ---
 let firmaImgData = null;
 const wrapper = document.getElementById('firma-wrapper');
-
 document.getElementById('firmaInput').addEventListener('change', (e) => {
     const file = e.target.files[0];
     const reader = new FileReader();
@@ -64,8 +70,6 @@ document.getElementById('firmaInput').addEventListener('change', (e) => {
         firmaImgData = event.target.result;
         document.getElementById('firma-img').src = firmaImgData;
         
-        // CORRECCIÓN: Posiciona la firma dentro del visor PDF
-        // La ponemos en 50px, 50px relativos al inicio del canvas
         xOffset = 50; 
         yOffset = 50;
         wrapper.style.transform = `translate3d(50px, 50px, 0)`;
@@ -80,31 +84,20 @@ document.getElementById('firmaInput').addEventListener('change', (e) => {
     reader.readAsDataURL(file);
 });
 
-// --- MOVIMIENTO Y REDIMENSIÓN DE FIRMA ---
 let active = false, resizerActive = false, currentX, currentY, initialX, initialY, xOffset = 0, yOffset = 0;
-
 wrapper.addEventListener("mousedown", (e) => {
     if (e.target.classList.contains('resizer-dot')) return;
     initialX = e.clientX - xOffset; initialY = e.clientY - yOffset;
     active = true;
 });
-
 document.querySelector('.resizer-dot').addEventListener("mousedown", (e) => {
-    resizerActive = true; 
-    e.stopPropagation();
+    resizerActive = true; e.stopPropagation();
 });
-
-document.addEventListener("mouseup", () => { 
-    active = false; 
-    resizerActive = false; 
-});
-
+document.addEventListener("mouseup", () => { active = false; resizerActive = false; });
 document.addEventListener("mousemove", (e) => {
     if (active) {
-        currentX = e.clientX - initialX; 
-        currentY = e.clientY - initialY;
-        xOffset = currentX; 
-        yOffset = currentY;
+        currentX = e.clientX - initialX; currentY = e.clientY - initialY;
+        xOffset = currentX; yOffset = currentY;
         wrapper.style.transform = `translate3d(${currentX}px, ${currentY}px, 0)`;
     } else if (resizerActive) {
         const rect = wrapper.getBoundingClientRect();
@@ -112,32 +105,26 @@ document.addEventListener("mousemove", (e) => {
         if (newWidth > 40) wrapper.style.width = newWidth + "px";
     }
 });
-
 wrapper.addEventListener('dblclick', () => {
     wrapper.classList.toggle('confirmada');
 });
 
-// --- PROCESO DE ENVÍO A GOOGLE DRIVE ---
+// --- ENVÍO FINAL ---
 document.getElementById('btnEnviar').addEventListener('click', async () => {
     const n = document.getElementById('nombreProfesor').value;
     if(!n) return alert("Escribe tu nombre.");
-    if(!wrapper.classList.contains('confirmada')) return alert("Fija la firma con doble clic (debe quedar sólida).");
+    if(!wrapper.classList.contains('confirmada')) return alert("Fija la firma con doble clic.");
 
     const btn = document.getElementById('btnEnviar');
     const load = document.getElementById('loading-msg');
-    btn.disabled = true; 
-    load.style.display = 'block';
+    btn.disabled = true; load.style.display = 'block';
 
     try {
-        // Cargar el PDF para edición
         const pdfLibDoc = await PDFDocument.load(pdfBytesOriginal);
         const pages = pdfLibDoc.getPages();
         const currentPage = pages[pageNum - 1];
-        
-        // Embeber la imagen de la firma
         const firmaImg = await pdfLibDoc.embedPng(firmaImgData);
         
-        // Cálculos de posición para el estampado final
         const canvas = document.getElementById('pdf-render');
         const rect = canvas.getBoundingClientRect();
         const wrapRect = wrapper.getBoundingClientRect();
@@ -145,7 +132,6 @@ document.getElementById('btnEnviar').addEventListener('click', async () => {
         const scaleX = currentPage.getWidth() / canvas.width;
         const scaleY = currentPage.getHeight() / canvas.height;
 
-        // Estampado de la firma en las coordenadas del PDF
         currentPage.drawImage(firmaImg, {
             x: (wrapRect.left - rect.left) * scaleX,
             y: (rect.bottom - wrapRect.bottom) * scaleY,
@@ -153,31 +139,23 @@ document.getElementById('btnEnviar').addEventListener('click', async () => {
             height: wrapRect.height * scaleY,
         });
 
-        // Generar el archivo final en Base64
         const pdfBase64 = await pdfLibDoc.saveAsBase64();
-        
-        // Formatear nombre del archivo
         const limpio = n.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().trim().replace(/\s+/g, '_');
         const codigo = nombreOriginal.split('_')[0];
-        const nombreFinal = `${limpio}_${codigo}.pdf`;
         
-        // Envío a Google Apps Script (Método ciego no-cors)
         fetch(URLS_SCRIPT[areaSeleccionada], {
             method: 'POST',
-            body: JSON.stringify({ base64: pdfBase64, filename: nombreFinal }),
+            body: JSON.stringify({ base64: pdfBase64, filename: `${limpio}_${codigo}.pdf` }),
             mode: 'no-cors'
         });
 
-        // Feedback al usuario y recarga
         setTimeout(() => {
             alert("✅ Informe enviado con éxito.");
             location.reload();
         }, 3500);
 
     } catch (e) {
-        console.error(e);
-        alert("Error al procesar el documento.");
-        btn.disabled = false; 
-        load.style.display = 'none';
+        alert("Error al procesar.");
+        btn.disabled = false; load.style.display = 'none';
     }
 });
