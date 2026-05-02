@@ -43,16 +43,12 @@
             display: flex; justify-content: center; align-items: center; padding: 40px;
         }
 
-        /* Ajuste de logos para que se vean iguales */
-        .btn-area-card img { 
-            width: 100%; height: 100%; object-fit: contain; 
-            display: block; margin: auto;
-        }
+        .btn-area-card img { width: 100%; height: 100%; object-fit: contain; display: block; margin: auto; }
 
         #btn-cem-card:hover { border-color: var(--cem-hover); box-shadow: 0 15px 35px rgba(120, 214, 75, 0.2); transform: translateY(-8px); }
         #btn-dps-card:hover { border-color: var(--dps-hover); box-shadow: 0 15px 35px rgba(255, 143, 29, 0.2); transform: translateY(-8px); }
 
-        /* --- APP CONTAINER (BOXED) --- */
+        /* --- APP CONTAINER --- */
         .app-wrapper {
             display: none; 
             width: 95%; max-width: 1200px; height: 85vh;
@@ -63,58 +59,56 @@
 
         /* --- SIDEBAR --- */
         .sidebar { 
-            width: 360px; background: #ffffff; padding: 45px 35px; 
+            width: 360px; background: #ffffff; padding: 40px 30px; 
             display: flex; flex-direction: column; border-right: 1px solid #f3f4f6;
         }
 
-        /* Logo visor más grande */
-        .logo-area { height: 110px; margin-bottom: 40px; display: flex; justify-content: center; align-items: center; }
+        .logo-area { height: 100px; margin-bottom: 30px; display: flex; justify-content: center; align-items: center; }
         .logo-area img { max-width: 100%; max-height: 100%; object-fit: contain; }
 
-        label { font-size: 0.8rem; font-weight: 700; color: #1a1a1a; text-transform: uppercase; margin-bottom: 10px; display: block; letter-spacing: 0.5px; }
+        label { font-size: 0.8rem; font-weight: 700; color: #1a1a1a; text-transform: uppercase; margin-bottom: 8px; display: block; letter-spacing: 0.5px; }
         
         input[type="text"] {
-            width: 100%; padding: 16px 20px; border: 2px solid #f3f4f6; border-radius: 14px;
-            margin-bottom: 30px; font-size: 1rem; background: #fafafa; outline: none; transition: 0.3s;
+            width: 100%; padding: 14px 18px; border: 2px solid #f3f4f6; border-radius: 14px;
+            margin-bottom: 20px; font-size: 1rem; background: #fafafa; outline: none; 
+            transition: border-color 0.3s; /* Sin blur */
         }
         input[type="text"]:focus { border-color: #e5e7eb; background: #fff; }
 
         .upload-zone {
-            display: block; padding: 16px; background: #ffffff; border-radius: 12px;
-            font-size: 0.85rem; color: #555; cursor: pointer; margin-bottom: 20px;
+            display: block; padding: 14px; background: #ffffff; border-radius: 12px;
+            font-size: 0.85rem; color: #555; cursor: pointer; margin-bottom: 15px;
             text-align: center; border: 2px solid #f3f4f6; font-weight: 600; transition: 0.2s;
         }
         .upload-zone:hover { background: #f9fafb; border-color: #d1d5db; }
 
-        .guia-rapida { margin-top: 10px; padding: 20px; background: #f8fafc; border-radius: 18px; border: 1px solid #f1f5f9; }
-        .guia-rapida span { display: block; font-size: 0.75rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; margin-bottom: 12px; }
-        .guia-item { display: flex; align-items: flex-start; gap: 10px; font-size: 0.8rem; color: #475569; margin-bottom: 10px; line-height: 1.4; }
-        .guia-num { background: #e2e8f0; color: #64748b; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 800; flex-shrink: 0; }
+        .guia-rapida { margin-top: 5px; padding: 15px; background: #f8fafc; border-radius: 18px; border: 1px solid #f1f5f9; margin-bottom: 20px;}
+        .guia-rapida span { display: block; font-size: 0.75rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; margin-bottom: 10px; }
+        .guia-item { display: flex; align-items: flex-start; gap: 10px; font-size: 0.8rem; color: #475569; margin-bottom: 8px; line-height: 1.3; }
+        .guia-num { background: #e2e8f0; color: #64748b; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 800; flex-shrink: 0; }
 
+        /* Ajuste de márgenes del botón */
         .btn-main-action {
-            width: 100%; background: var(--text-dark); color: white; border: none; padding: 24px; 
+            width: 100%; background: var(--text-dark); color: white; border: none; padding: 20px; 
             font-weight: 700; cursor: pointer; border-radius: 18px; font-size: 1rem; 
-            margin-top: auto; transition: all 0.3s; letter-spacing: 0.5px;
+            transition: all 0.3s; letter-spacing: 0.5px; margin-top: auto;
         }
-        .btn-main-action:hover:not(:disabled) { background: var(--btn-hover); transform: translateY(-3px); }
+        .btn-main-action:hover:not(:disabled) { background: var(--btn-hover); transform: translateY(-2px); }
         .btn-main-action:disabled { background: #ccc; cursor: not-allowed; }
 
         /* --- VISOR --- */
         .main-viewer { flex-grow: 1; background: var(--bg-canvas); display: flex; flex-direction: column; align-items: center; padding: 25px; overflow: hidden; }
-        .viewer-nav { background: rgba(255, 255, 255, 0.95); padding: 12px 30px; border-radius: 18px; display: none; align-items: center; gap: 25px; margin-bottom: 25px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
-        .nav-btn { background: #f1f5f9; border: none; width: 40px; height: 40px; border-radius: 12px; cursor: pointer; font-weight: bold; }
+        .viewer-nav { background: rgba(255, 255, 255, 0.95); padding: 10px 25px; border-radius: 18px; display: none; align-items: center; gap: 20px; margin-bottom: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        .nav-btn { background: #f1f5f9; border: none; width: 35px; height: 35px; border-radius: 10px; cursor: pointer; font-weight: bold; }
         
         .pdf-scroll-area { width: 100%; height: 100%; overflow: auto; display: flex; justify-content: center; padding-bottom: 60px; scrollbar-width: none; }
-        
-        /* SIN SOMBRA EN PDF */
         #canvas-container { background: white; box-shadow: none; position: relative; display: none; }
         #pdf-render { display: block; }
 
-        /* Firma controlada */
         #firma-wrapper { 
             position: absolute; border: 2px dashed #3b82f6; opacity: 0.5; 
             cursor: move; display: none; z-index: 100;
-            width: 150px; height: auto; /* Tamaño inicial controlado */
+            width: 150px; 
         }
         #firma-wrapper.confirmada { border: none; opacity: 1; }
         .resizer-dot { width: 14px; height: 14px; background: #3b82f6; position: absolute; right: -7px; bottom: -7px; border-radius: 50%; border: 2px solid white; cursor: nwse-resize; }
@@ -153,13 +147,13 @@
             <div class="guia-rapida">
                 <span>Guía de uso</span>
                 <div class="guia-item"><div class="guia-num">1</div><div>Ubica la firma arrastrándola.</div></div>
-                <div class="guia-item"><div class="guia-num">2</div><div>Doble clic sobre ella para fijarla.</div></div>
+                <div class="guia-item"><div class="guia-num">2</div><div>Doble clic para fijarla.</div></div>
                 <div class="guia-item"><div class="guia-num">3</div><div>Usa el punto azul para escalar.</div></div>
             </div>
             
             <button id="btnEnviar" class="btn-main-action" style="display:none">ENVIAR INFORME FIRMADO</button>
-            <div id="loading-msg">Procesando y subiendo... espera.</div>
-            <button onclick="location.reload()" style="background:none; border:none; color:#bbb; cursor:pointer; font-size:0.7rem; margin-top:15px; text-decoration:underline">Cambiar de área</button>
+            <div id="loading-msg">Procesando y subiendo...</div>
+            <button onclick="location.reload()" style="background:none; border:none; color:#bbb; cursor:pointer; font-size:0.7rem; margin-top:10px; text-decoration:underline">Cambiar de área</button>
         </div>
 
         <div class="main-viewer">
